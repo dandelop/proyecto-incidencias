@@ -1,27 +1,16 @@
-// Cargar variables de entorno
-require('dotenv').config();
+import 'dotenv/config'
+import express from 'express'
+import cors from 'cors'
+import router from './routes/index.js'
 
-const express = require('express');
-const cors = require('cors');
+const app = express()
 
-const app = express();
+app.use(cors())
+app.use(express.json())
 
-// Middlewares
-app.use(cors()); // El vigilante de los permisos que hablamos
-app.use(express.json()); // Para que tu servidor entienda el JSON que le mandará Vue
+app.use('/api', router)
 
-// Ruta de prueba (Punto 7 de tu pizarra)
-app.get('/api/test', (req, res) => {
-    res.json({ 
-        mensaje: "¡Hola desde Node.js!",
-        estado: "Servidor funcionando correctamente",
-        fecha: new Date().toLocaleString()
-    });
-});
-
-// El puerto lo saca del .env o usa el 3000 por defecto
-const PORT = process.env.PORT || 3000;
-
+const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor listo en http://localhost:${PORT}`);
-});
+    console.log(`Servidor funcionando en http://localhost:${PORT}`)
+})
