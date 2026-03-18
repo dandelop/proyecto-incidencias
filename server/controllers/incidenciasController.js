@@ -2,6 +2,7 @@ import incidenciasDao from '../dao/incidenciasDAO.js'
 
 const incidenciasController = {
 
+  // consultas básicas
   async contar(req, res) {
     try {
       const total = await incidenciasDao.contar()
@@ -57,6 +58,66 @@ const incidenciasController = {
       const { id } = req.params
       await incidenciasDao.eliminar(Number(id))
       res.json({ mensaje: 'Incidencia eliminada correctamente' })
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
+
+  // Consultas avanzadas
+
+  async listarConDetalles(req, res) {
+    try {
+      const incidencias = await incidenciasDao.listarConDetalles()
+      res.json(incidencias)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
+
+  async listarPorEstado(req, res) {
+    try {
+      const { estado } = req.params
+      const incidencias = await incidenciasDao.listarPorEstado(estado)
+      res.json(incidencias)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
+
+  async listarPorAsignado(req, res) {
+    try {
+      const { id } = req.params
+      const incidencias = await incidenciasDao.listarPorAsignado(Number(id))
+      res.json(incidencias)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
+
+  async listarPorCliente(req, res) {
+    try {
+      const { id } = req.params
+      const incidencias = await incidenciasDao.listarPorCliente(Number(id))
+      res.json(incidencias)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
+
+  async listarPorTipoEquipo(req, res) {
+    try {
+      const { tipo } = req.params
+      const incidencias = await incidenciasDao.listarPorTipoEquipo(tipo)
+      res.json(incidencias)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
+
+  async listarActivas(req, res) {
+    try {
+      const incidencias = await incidenciasDao.listarActivas()
+      res.json(incidencias)
     } catch (error) {
       res.status(500).json({ error: error.message })
     }

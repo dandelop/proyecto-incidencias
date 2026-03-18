@@ -70,6 +70,79 @@ const clientesController = {
     } catch (error) {
       res.status(500).json({ error: error.message })
     }
+  },
+
+  async listarPorTipo(req, res) {
+    try {
+      const { tipo } = req.params
+      const clientes = await clientesDao.listarPorTipo(tipo)
+      res.json(clientes)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
+
+  async listarActivos(req, res) {
+    try {
+      const clientes = await clientesDao.listarActivos()
+      res.json(clientes)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
+
+  async listarBajas(req, res) {
+    try {
+      const clientes = await clientesDao.listarBajas()
+      res.json(clientes)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
+
+  async listarConIncidencias(req, res) {
+    try {
+      const clientes = await clientesDao.listarConIncidencias()
+      res.json(clientes)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
+
+  async listarConIncidenciasActivas(req, res) {
+    try {
+      const clientes = await clientesDao.listarConIncidenciasActivas()
+      res.json(clientes)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
+
+  async listarSinIncidencias(req, res) {
+    try {
+      const clientes = await clientesDao.listarSinIncidencias()
+      res.json(clientes)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
+
+  async contarPorTipo(req, res) {
+    try {
+      const conteo = await clientesDao.contarPorTipo()
+      res.json(conteo)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
+
+  async clienteConMasIncidencias(req, res) {
+    try {
+      const cliente = await clientesDao.clienteConMasIncidencias()
+      res.json(cliente)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
   }
 
 }

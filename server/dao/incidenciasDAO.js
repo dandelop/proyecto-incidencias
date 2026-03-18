@@ -2,6 +2,7 @@ import supabase from '../config/supabase.js'
 
 const incidenciasDao = {
 
+  // Consultas básicas
   async contar() {
     const { count, error } = await supabase
       .from('incidencias')
@@ -55,8 +56,91 @@ const incidenciasDao = {
       .eq('id', id)
     if (error) throw error
     return true
-  }
+  },
 
+  // Consultas avanzadas
+  async listarConDetalles() {
+    const { data, error } = await supabase
+      .from('incidencias')
+      .select(`
+        *,
+        clientes (id, nombre, apellido1, apellido2, correo, telefono, tipo_cliente),
+        equipos (id, nombre, tipo, marca, modelo, serial, estado)
+      `)
+      .order('fecha_creacion', { ascending: false })
+    if (error) throw error
+    return data
+  },
+
+  async listarPorEstado(estado) {
+    const { data, error } = await supabase
+      .from('incidencias')
+      .select(`
+        *,
+        clientes (id, nombre, apellido1, apellido2, correo, telefono),
+        equipos (id, nombre, tipo, marca, modelo)
+      `)
+      .eq('estado', estado)
+      .order('fecha_creacion', { ascending: false })
+    if (error) throw error
+    return data
+  },
+
+  async listarPorAsignado(id_tecnico) {
+    const { data, error } = await supabase
+      .from('incidencias')
+      .select(`
+        *,
+        clientes (id, nombre, apellido1, apellido2, correo, telefono),
+        equipos (id, nombre, tipo, marca, modelo)
+      `)
+      .eq('id_tecnico_asignado', id_tecnico)
+      .order('fecha_creacion', { ascending: false })
+    if (error) throw error
+    return data
+  },
+
+  async listarPorCliente(id_cliente) {
+    const { data, error } = await supabase
+      .from('incidencias')
+      .select(`
+        *,
+        clientes (id, nombre, apellido1, apellido2, correo, telefono),
+        equipos (id, nombre, tipo, marca, modelo)
+      `)
+      .eq('id_cliente', id_cliente)
+      .order('fecha_creacion', { ascending: false })
+    if (error) throw error
+    return data
+  },
+
+  async listarPorTipoEquipo(tipo) {
+    const { data, error } = await supabase
+      .from('incidencias')
+      .select(`
+        *,
+        clientes (id, nombre, apellido1, apellido2, correo, telefono),
+        equipos!inner (id, nombre, tipo, marca, modelo)
+      `)
+      .eq('equipos.tipo', tipo)
+      .order('fecha_creacion', { ascending: false })
+    if (error) throw error
+    return data
+  },
+
+  async listarActivas() {
+    const { data, error } = await supabase
+      .from('incidencias')
+      .select(`
+        *,
+        clientes (id, nombre, apellido1, apellido2, correo, telefono),
+        equipos (id, nombre, tipo, marca, modelo)
+      `)
+      .not('estado', 'in', '("entregado","cancelado")')
+      .order('fecha_creacion', { ascending: false })
+    if (error) throw error
+    return data
+  }
 }
 
 export default incidenciasDao
