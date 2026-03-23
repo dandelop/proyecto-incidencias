@@ -1,4 +1,5 @@
 import empleadosDao from '../dao/empleadosDAO.js'
+import bcrypt from 'bcryptjs'
 
 const empleadosController = {
 
@@ -25,7 +26,13 @@ const empleadosController = {
   async registrar(req, res) {
     try {
       const empleado = req.body
-      const nuevo = await empleadosDao.registrar(empleado)
+
+      const password_hash = await bcrypt.hash(empleado.password_hash, 10)
+
+      const nuevo = await empleadosDao.registrar({
+        ...empleado,
+        password_hash
+      })
       res.status(201).json(nuevo)
     } catch (error) {
       res.status(500).json({ error: error.message })

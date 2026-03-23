@@ -70,6 +70,8 @@ const clientesDao = {
     return count
   },
 
+  // Consultas avanzadas
+
   async listarPorTipo(tipo) {
     const { data, error } = await supabase
       .from('clientes')

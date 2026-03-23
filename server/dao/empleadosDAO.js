@@ -38,6 +38,8 @@ const empleadosDao = {
     return data[0]
   },
 
+  // Consultas avanzadas
+
   async listarActivos() {
     const { data, error } = await supabase
       .from('empleados')

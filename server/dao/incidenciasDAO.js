@@ -78,7 +78,7 @@ const incidenciasDao = {
       .select(`
         *,
         clientes (id, nombre, apellido1, apellido2, correo, telefono),
-        equipos (id, nombre, tipo, marca, modelo)
+        equipos (id, nombre, tipo, marca, modelo, serial, estado)
       `)
       .eq('estado', estado)
       .order('fecha_creacion', { ascending: false })
@@ -92,7 +92,7 @@ const incidenciasDao = {
       .select(`
         *,
         clientes (id, nombre, apellido1, apellido2, correo, telefono),
-        equipos (id, nombre, tipo, marca, modelo)
+        equipos (id, nombre, tipo, marca, modelo, serial, estado)
       `)
       .eq('id_tecnico_asignado', id_tecnico)
       .order('fecha_creacion', { ascending: false })
@@ -106,7 +106,7 @@ const incidenciasDao = {
       .select(`
         *,
         clientes (id, nombre, apellido1, apellido2, correo, telefono),
-        equipos (id, nombre, tipo, marca, modelo)
+        equipos (id, nombre, tipo, marca, modelo, serial, estado)
       `)
       .eq('id_cliente', id_cliente)
       .order('fecha_creacion', { ascending: false })
@@ -120,7 +120,7 @@ const incidenciasDao = {
       .select(`
         *,
         clientes (id, nombre, apellido1, apellido2, correo, telefono),
-        equipos!inner (id, nombre, tipo, marca, modelo)
+        equipos!inner (id, nombre, tipo, marca, modelo, serial, estado)
       `)
       .eq('equipos.tipo', tipo)
       .order('fecha_creacion', { ascending: false })
@@ -134,7 +134,7 @@ const incidenciasDao = {
       .select(`
         *,
         clientes (id, nombre, apellido1, apellido2, correo, telefono),
-        equipos (id, nombre, tipo, marca, modelo)
+        equipos (id, nombre, tipo, marca, modelo, serial, estado)
       `)
       .not('estado', 'in', '("entregado","cancelado")')
       .order('fecha_creacion', { ascending: false })

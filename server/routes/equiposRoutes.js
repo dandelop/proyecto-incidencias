@@ -3,11 +3,6 @@ import equiposController from '../controllers/equiposController.js'
 
 const router = Router()
 
-router.use((req, res, next) => {
-  console.log('Ruta equipos:', req.method, req.path)
-  next()
-})
-
 // Muestra todos los equipos
 router.get('/', equiposController.listarTodos)
 // Muestra solo los equipos que tienen incidencias activas
@@ -18,6 +13,7 @@ router.get('/contar/tipo', equiposController.contarPorTipo)
 router.get('/tipo/:tipo', equiposController.listarPorTipo)
 
 // Estas al final por tema de supabase y el buscar por id
+// Muestra los detalles de un equipo específico por su ID
 router.get('/:id', equiposController.buscarPorId)
 // Muestra el historial de incidencias de un equipo específico por su ID
 router.get('/:id/historial', equiposController.historialIncidencias)

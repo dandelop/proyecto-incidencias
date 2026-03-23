@@ -14,7 +14,6 @@ const equiposController = {
   async buscarPorId(req, res) {
     try {
       const { id } = req.params
-      console.log('buscarPorId llamado con id:', id)
       if (isNaN(Number(id))) return res.status(400).json({ error: 'Id inválido' })
       const equipo = await equiposDao.buscarPorId(Number(id))
       if (!equipo) return res.status(404).json({ error: 'Equipo no encontrado' })

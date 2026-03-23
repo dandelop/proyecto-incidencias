@@ -48,6 +48,8 @@ const equiposDao = {
     return true
   },
 
+  // Consultas avanzadas
+
   async listarPorTipo(tipo) {
     const { data, error } = await supabase
       .from('equipos')

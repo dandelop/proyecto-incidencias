@@ -19,6 +19,8 @@ router.get('/departamento/:departamento', empleadosController.listarPorDepartame
 router.get('/nivel/:nivel', empleadosController.listarPorNivel)
 // Muestra un empleado específico por su correo
 router.get('/correo/:correo', empleadosController.obtenerPorCorreo)
+
+// Estas al final por tema de supabase y el buscar por id
 // Muestra las incidencias creadas por un empleado específico
 router.get('/:id/incidencias-creadas', empleadosController.listarConIncidenciasCreadas)
 // Muestra las incidencias asignadas a un empleado específico
