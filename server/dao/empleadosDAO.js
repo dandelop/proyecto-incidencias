@@ -129,7 +129,28 @@ const empleadosDao = {
       acc[empleado.estado] = (acc[empleado.estado] || 0) + 1
       return acc
     }, {})
+  },
+
+  async buscarPorId(id) {
+    const { data, error } = await supabase
+      .from('empleados')
+      .select('*')
+      .eq('id', id)
+      .single()
+    if (error) throw error
+    return data
+  },
+
+  async cambiarPassword(id, passwordHash) {
+    const { data, error } = await supabase
+      .from('empleados')
+      .update({ password_hash: passwordHash })
+      .eq('id', id)
+      .select()
+    if (error) throw error
+    return data[0]
   }
+
 }
 
 export default empleadosDao

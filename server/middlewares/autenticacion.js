@@ -22,7 +22,7 @@ const verificarToken = (req, res, next) => {
 }
 
 // Equivalente a comprobar $nivel_requerido
-const requireNivel = (...nivelesPermitidos) => {
+const nivelAcceso = (...nivelesPermitidos) => {
   return (req, res, next) => {
     if (!nivelesPermitidos.includes(req.empleado.nivel_acceso)) {
       return res.status(403).json({ error: 'No tienes permisos suficientes' })
@@ -31,4 +31,4 @@ const requireNivel = (...nivelesPermitidos) => {
   }
 }
 
-export { verificarToken, requireNivel }
+export { verificarToken, nivelAcceso }

@@ -8,7 +8,7 @@ const error = ref(null)
 
 const obtenerEmpleados = async () => {
   try {
-    // Llamada a tu servidor de Node
+    // Llamada a al servidor de Node
     const respuesta = await axios.get('http://localhost:3000/api/empleados')
     empleados.value = respuesta.data
   } catch (err) {
