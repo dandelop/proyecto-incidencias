@@ -16,6 +16,9 @@ router.get('/contar/tipo', nivelAcceso('administrador'), equiposController.conta
 // Muestra los equipos filtrados por tipo
 router.get('/tipo/:tipo', nivelAcceso('administrador', 'técnico'), equiposController.listarPorTipo)
 
+// Busca por id
+router.get('/serial/:serial', nivelAcceso('administrador', 'técnico'), equiposController.buscarPorSerial)
+
 // Estas al final por tema de supabase y el buscar por id
 // Muestra los detalles de un equipo específico por su ID
 router.get('/:id', nivelAcceso('administrador', 'técnico'), equiposController.buscarPorId)

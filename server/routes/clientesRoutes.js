@@ -34,6 +34,9 @@ router.get('/mas-incidencias', nivelAcceso('administrador'), clientesController.
 // Muestra los clientes filtrados por tipo
 router.get('/tipo/:tipo', nivelAcceso('administrador', 'técnico'), clientesController.listarPorTipo)
 
+// Dar de alta un cliente de baja
+router.patch('/:id/alta', nivelAcceso('administrador'), clientesController.darDeAlta)
+
 // Estas al final por tema de supabase y el buscar por id
 // Muestra los detalles de un cliente específico por su ID
 router.get('/:id', nivelAcceso('administrador'), clientesController.buscarPorId)

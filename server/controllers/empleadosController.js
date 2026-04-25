@@ -1,5 +1,7 @@
 import empleadosDao from '../dao/empleadosDAO.js'
 import bcrypt from 'bcryptjs'
+import supabase from '../config/supabase.js'
+import { enviarEmailCambioPassword } from '../utils/email.js'
 
 const empleadosController = {
 
@@ -177,13 +179,45 @@ const empleadosController = {
       const password_hash = await bcrypt.hash(password_nueva, 10)
       await empleadosDao.cambiarPassword(Number(id), password_hash)
 
+      // Envía correo de aviso al empleado (idealmente al correo del propio empleado)
+      const empleado = await empleadosDao.buscarPorId(Number(id))
+      await enviarEmailCambioPassword(empleado)
+
       res.json({ mensaje: 'Contraseña actualizada correctamente' })
 
     } catch (error) {
       res.status(500).json({ error: error.message })
     }
-  }
+  },
 
+  async actualizar(req, res) {
+    try {
+      const { id } = req.params
+      const empleado = req.body
+
+      // busca las incidencias del empleado
+      const { data: incidenciasAfectadas } = await supabase
+        .from('incidencias')
+        .select('id')
+        .eq('id_tecnico_asignado', Number(id))
+        .not('estado', 'in', '("entregado","cancelado")')
+
+      // Si el empleado no va a estar disponible, se le quitan las incidencias
+      if (['baja', 'desvinculado', 'vacaciones'].includes(empleado.estado)) {
+        await supabase
+          .from('incidencias')
+          .update({ id_tecnico_asignado: null })
+          .eq('id_tecnico_asignado', Number(id))
+          .not('estado', 'in', '("entregado","cancelado")')
+      }
+
+      const actualizado = await empleadosDao.actualizar(Number(id), empleado)
+      res.json({ empleado: actualizado, incidenciasDesasignadas: incidenciasAfectadas.length })
+
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
 }
 
 export default empleadosController

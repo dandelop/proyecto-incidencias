@@ -1,4 +1,5 @@
 import clientesDao from '../dao/clientesDAO.js'
+import supabase from '../config/supabase.js'
 
 const clientesController = {
 
@@ -46,8 +47,26 @@ const clientesController = {
   async darDeBaja(req, res) {
     try {
       const { id } = req.params
+
+      // Comprobamos si tiene incidencias activas
+      const { data: incidencias } = await supabase
+        .from('incidencias')
+        .select('id')
+        .eq('id_cliente', Number(id))
+        .not('estado', 'in', '("entregado","cancelado")')
+
+      if (incidencias.length > 0) {
+        // Cancelamos todas las incidencias activas
+        await supabase
+          .from('incidencias')
+          .update({ estado: 'cancelado', fecha_cierre: new Date().toISOString() })
+          .eq('id_cliente', Number(id))
+          .not('estado', 'in', '("entregado","cancelado")')
+      }
+
       const cliente = await clientesDao.darDeBaja(Number(id))
-      res.json(cliente)
+      res.json({ cliente, incidenciasCanceladas: incidencias.length })
+
     } catch (error) {
       res.status(500).json({ error: error.message })
     }
@@ -56,8 +75,24 @@ const clientesController = {
   async eliminar(req, res) {
     try {
       const { id } = req.params
+
+      // Comprobamos si tiene incidencias activas
+      const { data: incidencias } = await supabase
+        .from('incidencias')
+        .select('id')
+        .eq('id_cliente', Number(id))
+        .not('estado', 'in', '("entregado","cancelado")')
+
+      if (incidencias.length > 0) {
+        return res.status(409).json({
+          error: 'El cliente tiene incidencias activas',
+          incidenciasActivas: incidencias.length
+        })
+      }
+
       await clientesDao.eliminar(Number(id))
       res.json({ mensaje: 'Cliente eliminado correctamente' })
+
     } catch (error) {
       res.status(500).json({ error: error.message })
     }
@@ -143,7 +178,17 @@ const clientesController = {
     } catch (error) {
       res.status(500).json({ error: error.message })
     }
-  }
+  },
+
+  async darDeAlta(req, res) {
+    try {
+      const { id } = req.params
+      const cliente = await clientesDao.darDeAlta(Number(id))
+      res.json(cliente)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
 
 }
 

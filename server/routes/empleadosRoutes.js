@@ -48,4 +48,7 @@ router.get('/:id', nivelAcceso('administrador', 'técnico'), empleadosController
 // Cambio de contraseña
 router.patch('/:id/password', nivelAcceso('administrador', 'técnico'), empleadosController.cambiarPassword)
 
+// Actualiza los datos de un empleado
+router.put('/:id', nivelAcceso('administrador', 'técnico'), empleadosController.actualizar)
+
 export default router

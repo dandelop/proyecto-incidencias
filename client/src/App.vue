@@ -1,67 +1,39 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { RouterView } from 'vue-router'
+import { onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import api from './services/axios.js'
+import { authStore } from './store/auth.js'
+import NavBar from './components/NavBar.vue'
+import FooterApp from './components/FooterApp.vue'
 
-const empleados = ref([])
-const error = ref(null)
+const route = useRoute()
+const mostrarLayout = computed(() => route.name !== 'login')
 
-const cargarEmpleados = async () => {
+onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/api/empleados')
-    empleados.value = res.data
-  } catch (err) {
-    error.value = "No se ha podido conectar con al servidor."
-    console.error(err)
+    const res = await api.get('/autenticacion/me')
+    authStore.empleado = res.data.empleado
+    authStore.isLoggedIn = true
+  } catch {
+    authStore.empleado = null
+    authStore.isLoggedIn = false
+  } finally {
+    authStore.cargando = false
   }
-}
-
-onMounted(() => {
-  cargarEmpleados()
 })
 </script>
 
 <template>
-  <main>
-    <h1>Gestión de Incidencias - Empleados</h1>
+  <div v-if="authStore.cargando" class="min-vh-100 d-flex align-items-center justify-content-center">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
 
-    <div v-if="error" class="alerta">{{ error }}</div>
-
-    <table v-else border="1">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Puesto</th>
-          <th>Departamento</th>
-          <th>Estado</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="emp in empleados" :key="emp.id">
-          <td>{{ emp.nombre }} {{ emp.apellido1 }}</td>
-          <td>{{ emp.puesto }}</td>
-          <td>{{ emp.departamento }}</td>
-          <td>{{ emp.estado }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </main>
+  <div v-else class="d-flex flex-column min-vh-100">
+    <NavBar v-if="mostrarLayout" />
+    <main class="flex-grow-1 container-fluid py-4">
+      <RouterView />
+    </main>
+    <FooterApp v-if="mostrarLayout" />
+  </div>
 </template>
-
-<style>
-main {
-  padding: 20px;
-  font-family: Arial, sans-serif;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-th,
-td {
-  padding: 10px;
-  text-align: left;
-}
-</style>

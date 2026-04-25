@@ -65,7 +65,9 @@ const incidenciasDao = {
       .select(`
         *,
         clientes (id, nombre, apellido1, apellido2, correo, telefono, tipo_cliente),
-        equipos (id, nombre, tipo, marca, modelo, serial, estado)
+        equipos (id, nombre, tipo, marca, modelo, serial, estado),
+        tecnico:empleados!id_tecnico_asignado (id, nombre, apellido1),
+        creador:empleados!id_empleado_creador (id, nombre, apellido1)
       `)
       .order('fecha_creacion', { ascending: false })
     if (error) throw error

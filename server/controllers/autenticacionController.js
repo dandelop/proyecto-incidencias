@@ -33,6 +33,7 @@ const autenticacionController = {
         id: empleado.id,
         correo: empleado.correo,
         nombre: empleado.nombre,
+        apellido1: empleado.apellido1,
         nivel_acceso: empleado.nivel_acceso,
         departamento: empleado.departamento
       }

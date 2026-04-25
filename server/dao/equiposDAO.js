@@ -82,6 +82,9 @@ const equiposDao = {
       .eq('id', id)
       .single()
     if (error) throw error
+    if (data.incidencias) {
+      data.incidencias.sort((a, b) => new Date(b.fecha_creacion) - new Date(a.fecha_creacion))
+    }
     return data
   },
 
@@ -95,7 +98,17 @@ const equiposDao = {
       acc[equipo.tipo] = (acc[equipo.tipo] || 0) + 1
       return acc
     }, {})
-  }
+  },
+
+  async buscarPorSerial(serial) {
+    const { data, error } = await supabase
+      .from('equipos')
+      .select('*')
+      .eq('serial', serial)
+      .single()
+    if (error) return null
+    return data
+  },
 
 }
 

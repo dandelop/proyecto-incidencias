@@ -6,7 +6,8 @@ const clientesDao = {
     const { data, error } = await supabase
       .from('clientes')
       .select('*')
-      .order('fecha_alta', { ascending: true })
+      .order('apellido1', { ascending: true })
+      .order('nombre', { ascending: true })
     if (error) throw error
     return data
   },
@@ -162,7 +163,20 @@ const clientesDao = {
         total_incidencias: cliente.incidencias.length
       }))
       .sort((a, b) => b.total_incidencias - a.total_incidencias)[0]
-  }
+  },
+
+  async darDeAlta(id) {
+    const { data, error } = await supabase
+      .from('clientes')
+      .update({
+        activo: true,
+        fecha_baja: null
+      })
+      .eq('id', id)
+      .select()
+    if (error) throw error
+    return data[0]
+  },
 
 }
 

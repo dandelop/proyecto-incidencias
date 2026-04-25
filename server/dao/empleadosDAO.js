@@ -5,6 +5,8 @@ const empleadosDao = {
     const { data, error } = await supabase
       .from('empleados')
       .select('*')
+      .order('apellido1', { ascending: true })
+      .order('nombre', { ascending: true })
     if (error) throw error
     return data
   },
@@ -149,7 +151,17 @@ const empleadosDao = {
       .select()
     if (error) throw error
     return data[0]
-  }
+  },
+
+  async actualizar(id, empleado) {
+    const { data, error } = await supabase
+      .from('empleados')
+      .update(empleado)
+      .eq('id', id)
+      .select()
+    if (error) throw error
+    return data[0]
+  },
 
 }
 

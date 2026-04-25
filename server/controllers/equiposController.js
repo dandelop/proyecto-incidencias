@@ -91,7 +91,18 @@ const equiposController = {
     } catch (error) {
       res.status(500).json({ error: error.message })
     }
-  }
+  },
+
+  async buscarPorSerial(req, res) {
+    try {
+      const { serial } = req.params
+      const equipo = await equiposDao.buscarPorSerial(serial)
+      if (!equipo) return res.status(404).json({ error: 'Equipo no encontrado' })
+      res.json(equipo)
+    } catch (error) {
+      res.status(500).json({ error: error.message })
+    }
+  },
 
 }
 

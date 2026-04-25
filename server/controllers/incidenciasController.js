@@ -1,4 +1,5 @@
 import incidenciasDao from '../dao/incidenciasDAO.js'
+import supabase from '../config/supabase.js'
 
 const incidenciasController = {
 
@@ -32,24 +33,63 @@ const incidenciasController = {
     }
   },
 
-  async insertar(req, res) {
+  async insertar(req, res, next) {
     try {
       const incidencia = req.body
-      const nueva = await incidenciasDao.insertar(incidencia)
-      res.status(201).json(nueva)
-    } catch (error) {
-      res.status(500).json({ error: error.message })
+
+      // Título obligatorio
+      if (!incidencia.titulo || incidencia.titulo.trim() === '') {
+        return res.status(400).json({ error: 'El título es obligatorio' })
+      }
+
+      // Comprueba si el equipo ya tiene una incidencia activa
+      const { data: incidenciasEquipo } = await supabase
+        .from('incidencias')
+        .select('id')
+        .eq('id_equipo', incidencia.id_equipo)
+        .not('estado', 'in', '("entregado","cancelado")')
+
+      if (incidenciasEquipo.length > 0) {
+        return res.status(409).json({
+          error: 'Este equipo ya tiene una incidencia activa'
+        })
+      }
+
+      const nueva = await incidenciasDao.insertar({
+        ...incidencia,
+        codigo: 'TEMPORAL'
+      })
+
+      const año = new Date().getFullYear()
+      const codigo = `INC-${año}-${nueva.id}`
+      const actualizada = await incidenciasDao.modificar(nueva.id, { codigo })
+
+      res.status(201).json(actualizada)
+
+    } catch (err) {
+      next(err)
     }
   },
 
-  async modificar(req, res) {
+  async modificar(req, res, next) {
     try {
       const { id } = req.params
-      const incidencia = req.body
-      const modificada = await incidenciasDao.modificar(Number(id), incidencia)
+      const cambios = req.body
+
+      // Fechas automáticas según el estado
+      if (cambios.estado === 'en_proceso' && !cambios.fecha_inicio) {
+        cambios.fecha_inicio = new Date().toISOString()
+      }
+
+      if (['entregado', 'cancelado'].includes(cambios.estado)) {
+        cambios.fecha_cierre = new Date().toISOString()
+      }
+
+      const modificada = await incidenciasDao.modificar(Number(id), cambios)
       res.json(modificada)
-    } catch (error) {
-      res.status(500).json({ error: error.message })
+
+    } catch (err) {
+      next(err)
     }
   },
 
