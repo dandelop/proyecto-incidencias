@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import autenticacionDao from '../dao/autenticacionDAO.js'
+import autenticacionDao from '../dao/autenticacionDao.js'
 import registrarLog from '../middlewares/registroSeguridad.js'
 
 const autenticacionController = {

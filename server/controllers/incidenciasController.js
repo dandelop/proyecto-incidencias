@@ -1,4 +1,4 @@
-import incidenciasDao from '../dao/incidenciasDAO.js'
+import incidenciasDao from '../dao/incidenciasDao.js'
 import supabase from '../config/supabase.js'
 
 const incidenciasController = {
