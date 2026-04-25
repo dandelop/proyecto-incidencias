@@ -9,6 +9,8 @@ import manejadorErrores from './middlewares/manejadorErrores.js'
 
 const app = express()
 
+app.set('trust proxy', 1)
+
 app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true
@@ -17,9 +19,7 @@ app.use(helmet())
 app.use(cookieParser())
 app.use(express.json())
 app.use(limiterGeneral)
-
 app.use('/api', router)
-
 app.use(manejadorErrores)
 
 const PORT = process.env.PORT || 3000

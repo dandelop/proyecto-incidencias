@@ -45,8 +45,8 @@ const autenticacionController = {
       // se guarda el token en una cookie httponly
       res.cookie('token', token, {
         httpOnly: true,         // JS no puede acceder a ella
-        secure: process.env.NODE_ENV === 'production', // solo HTTPS en producción
-        sameSite: 'Lax',        // protección CSRF
+        secure: true,
+        sameSite: 'None',        // protección CSRF
         maxAge: 8 * 60 * 60 * 1000 // 8 horas en milisegundos
       })
 
@@ -74,7 +74,11 @@ const autenticacionController = {
   async logout(req, res) {
     // Registramos el logout antes de borrar la cookie
     await registrarLog(req.empleado?.id, 'LOGOUT', 'Cierre de sesión', req)
-    res.clearCookie('token')
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None'
+    })
     res.json({ mensaje: 'Sesión cerrada correctamente' })
   },
 
