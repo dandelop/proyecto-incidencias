@@ -1,4 +1,4 @@
-import logDao from '../dao/logDAO.js'
+import logDao from '../dao/logDao.js'
 
 const logController = {
 
