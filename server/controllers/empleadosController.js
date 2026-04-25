@@ -1,4 +1,4 @@
-import empleadosDao from '../dao/empleadosDAO.js'
+import empleadosDao from '../dao/empleadosDao.js'
 import bcrypt from 'bcryptjs'
 import supabase from '../config/supabase.js'
 import { enviarEmailCambioPassword } from '../utils/email.js'
