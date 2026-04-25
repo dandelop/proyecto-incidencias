@@ -1,4 +1,4 @@
-import clientesDao from '../dao/clientesDAO.js'
+import clientesDao from '../dao/clientesDao.js'
 import supabase from '../config/supabase.js'
 
 const clientesController = {
