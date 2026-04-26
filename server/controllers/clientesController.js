@@ -1,5 +1,6 @@
 import clientesDao from '../dao/clientesDao.js'
 import supabase from '../config/supabase.js'
+import registrarLog from '../middlewares/registroSeguridad.js'
 
 const clientesController = {
 
@@ -27,6 +28,9 @@ const clientesController = {
     try {
       const cliente = req.body
       const nuevo = await clientesDao.insertar(cliente)
+
+      await registrarLog(req.empleado.id, 'CLIENTE_CREADO', `Cliente ${nuevo.nombre} ${nuevo.apellido1} creado`, req)
+
       res.status(201).json(nuevo)
     } catch (error) {
       res.status(500).json({ error: error.message })
@@ -38,6 +42,9 @@ const clientesController = {
       const { id } = req.params
       const cliente = req.body
       const actualizado = await clientesDao.actualizar(Number(id), cliente)
+
+      await registrarLog(req.empleado.id, 'CLIENTE_MODIFICADO', `Cliente id:${id} modificado`, req)
+
       res.json(actualizado)
     } catch (error) {
       res.status(500).json({ error: error.message })
@@ -65,6 +72,9 @@ const clientesController = {
       }
 
       const cliente = await clientesDao.darDeBaja(Number(id))
+
+      await registrarLog(req.empleado.id, 'CLIENTE_BAJA', `Cliente id:${id} dado de baja`, req)
+
       res.json({ cliente, incidenciasCanceladas: incidencias.length })
 
     } catch (error) {
@@ -91,6 +101,9 @@ const clientesController = {
       }
 
       await clientesDao.eliminar(Number(id))
+
+      await registrarLog(req.empleado.id, 'CLIENTE_ELIMINADO', `Cliente id:${id} eliminado`, req)
+
       res.json({ mensaje: 'Cliente eliminado correctamente' })
 
     } catch (error) {

@@ -79,6 +79,22 @@ const router = createRouter({
       meta: { requiresAuth: true },
       component: () => import('../views/EmpleadoDetalleView.vue')
     },
+    {
+      path: '/logs',
+      name: 'logs',
+      meta: { requiresAuth: true, soloAdmin: true },
+      component: () => import('../views/LogsView.vue')
+    },
+    {
+      path: '/estadisticas',
+      name: 'estadisticas',
+      meta: { requiresAuth: true, soloAdmin: true },
+      component: () => import('../views/EstadisticasView.vue')
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/'
+    }
   ],
 })
 

@@ -1,5 +1,6 @@
 import incidenciasDao from '../dao/incidenciasDao.js'
 import supabase from '../config/supabase.js'
+import registrarLog from '../middlewares/registroSeguridad.js'
 
 const incidenciasController = {
 
@@ -64,6 +65,8 @@ const incidenciasController = {
       const codigo = `INC-${año}-${nueva.id}`
       const actualizada = await incidenciasDao.modificar(nueva.id, { codigo })
 
+      await registrarLog(req.empleado.id, 'INCIDENCIA_CREADA', `Incidencia ${actualizada.codigo} creada`, req)
+
       res.status(201).json(actualizada)
 
     } catch (err) {
@@ -86,6 +89,9 @@ const incidenciasController = {
       }
 
       const modificada = await incidenciasDao.modificar(Number(id), cambios)
+
+      await registrarLog(req.empleado.id, 'INCIDENCIA_MODIFICADA', `Incidencia ${modificada.codigo} modificada`, req)
+
       res.json(modificada)
 
     } catch (err) {
@@ -97,6 +103,9 @@ const incidenciasController = {
     try {
       const { id } = req.params
       await incidenciasDao.eliminar(Number(id))
+
+      await registrarLog(req.empleado.id, 'INCIDENCIA_ELIMINADA', `Incidencia id:${id} eliminada`, req)
+
       res.json({ mensaje: 'Incidencia eliminada correctamente' })
     } catch (error) {
       res.status(500).json({ error: error.message })

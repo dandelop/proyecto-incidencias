@@ -2,6 +2,7 @@ import empleadosDao from '../dao/empleadosDao.js'
 import bcrypt from 'bcryptjs'
 import supabase from '../config/supabase.js'
 import { enviarEmailCambioPassword } from '../utils/email.js'
+import registrarLog from '../middlewares/registroSeguridad.js'
 
 const empleadosController = {
 
@@ -35,6 +36,9 @@ const empleadosController = {
         ...empleado,
         password_hash
       })
+
+      await registrarLog(req.empleado.id, 'EMPLEADO_CREADO', `Empleado ${nuevo.nombre} ${nuevo.apellido1} creado`, req)
+
       res.status(201).json(nuevo)
     } catch (error) {
       res.status(500).json({ error: error.message })
@@ -183,6 +187,8 @@ const empleadosController = {
       const empleado = await empleadosDao.buscarPorId(Number(id))
       await enviarEmailCambioPassword(empleado)
 
+      await registrarLog(req.empleado.id, 'PASSWORD_CAMBIADA', `Contraseña del empleado id:${id} modificada`, req)
+
       res.json({ mensaje: 'Contraseña actualizada correctamente' })
 
     } catch (error) {
@@ -210,8 +216,10 @@ const empleadosController = {
           .eq('id_tecnico_asignado', Number(id))
           .not('estado', 'in', '("entregado","cancelado")')
       }
-
       const actualizado = await empleadosDao.actualizar(Number(id), empleado)
+
+      await registrarLog(req.empleado.id, 'EMPLEADO_MODIFICADO', `Empleado id:${id} modificado`, req)
+
       res.json({ empleado: actualizado, incidenciasDesasignadas: incidenciasAfectadas.length })
 
     } catch (error) {

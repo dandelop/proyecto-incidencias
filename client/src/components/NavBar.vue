@@ -23,7 +23,7 @@ const logout = async () => {
       <!-- Logo y nombre -->
       <a class="navbar-brand d-flex align-items-center gap-2" href="#">
         <img src="../assets/logo.png" alt="Logo" width="32" height="32" onerror="this.style.display='none'">
-        <span>IncidenciasApp</span>
+        <span class="ms-1">Gestor de Incidencias</span>
       </a>
 
       <!-- Botón hamburguesa para móvil -->
@@ -32,7 +32,8 @@ const logout = async () => {
       </button>
 
       <div class="collapse navbar-collapse" id="navbarNav">
-        <!-- Enlaces -->
+
+        <!-- Enlaces para todos-->
         <ul class="navbar-nav me-auto">
           <li class="nav-item">
             <RouterLink class="nav-link" to="/incidencias">Incidencias</RouterLink>
@@ -43,9 +44,18 @@ const logout = async () => {
           <li class="nav-item">
             <RouterLink class="nav-link" to="/equipos">Equipos</RouterLink>
           </li>
-          <!-- Solo admin -->
+
+          <!-- Solo admins -->
           <li class="nav-item" v-if="authStore.empleado?.nivel_acceso === 'administrador'">
             <RouterLink class="nav-link" to="/empleados">Empleados</RouterLink>
+          </li>
+
+          <li class="nav-item" v-if="authStore.empleado?.nivel_acceso === 'administrador'">
+            <RouterLink class="nav-link" to="/estadisticas">Estadísticas</RouterLink>
+          </li>
+
+          <li class="nav-item" v-if="authStore.empleado?.nivel_acceso === 'administrador'">
+            <RouterLink class="nav-link" to="/logs">Registro</RouterLink>
           </li>
         </ul>
 

@@ -10,16 +10,19 @@ const empleados = ref([])
 const error = ref(null)
 const cargando = ref(false)
 
-// Filtros y búsqueda
+// Filtros y paginación
 const busqueda = ref('')
 const filtroNivel = ref('')
 const filtroDepartamento = ref('')
 const filtroEstado = ref('')
-
-// Paginación
 const paginaActual = ref(1)
 const porPagina = 15
 
+/**
+ * Carga el listado completo de empleados.
+ * Se opta por una carga total inicial delegando el filtrado al cliente 
+ * para mejorar la reactividad de la búsqueda.
+ */
 const cargar = async () => {
   try {
     cargando.value = true
@@ -31,9 +34,16 @@ const cargar = async () => {
   }
 }
 
+/**
+ * Lógica centralizada de filtrado.
+ * Implementa normalización de texto para ignorar tildes/mayúsculas.
+ * Excluye al usuario actual para evitar auto-gestión desde este listado.
+ */
 const empleadosFiltrados = computed(() => {
   return empleados.value.filter(e => {
     const noEsElMismo = e.id !== authStore.empleado?.id
+
+    // Búsqueda múltiple: nombre, apellidos, correo y DNI
     const coincideBusqueda = !busqueda.value ||
       normalizar(e.nombre).includes(normalizar(busqueda.value)) ||
       normalizar(e.apellido1).includes(normalizar(busqueda.value)) ||
@@ -47,11 +57,13 @@ const empleadosFiltrados = computed(() => {
   })
 })
 
+// Segmentación para paginación basada en el resultado ya filtrado
 const empleadosPaginados = computed(() => {
   const inicio = (paginaActual.value - 1) * porPagina
   return empleadosFiltrados.value.slice(inicio, inicio + porPagina)
 })
 
+// Si se cambia cualquier filtro, volvemos a la página 1 para evitar listados vacíos
 const totalPaginas = computed(() => {
   return Math.ceil(empleadosFiltrados.value.length / porPagina)
 })
@@ -65,6 +77,8 @@ onMounted(cargar)
 
 <template>
   <div>
+
+    <!-- Encabezado con título y botón para crear nuevo empleado -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>Empleados</h2>
       <RouterLink to="/empleados/nuevo" class="btn btn-primary">Nuevo empleado</RouterLink>
@@ -72,11 +86,13 @@ onMounted(cargar)
 
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
 
-    <!-- Filtros -->
+    <!-- FILTROS -->
     <div class="row g-3 mb-4">
       <div class="col-md-3">
         <input v-model="busqueda" type="text" class="form-control" placeholder="Buscar por nombre, correo o DNI..." />
       </div>
+
+      <!-- Filtro de nivel de acceso -->
       <div class="col-md-2">
         <select v-model="filtroNivel" class="form-select">
           <option value="">Todos los niveles</option>
@@ -84,10 +100,14 @@ onMounted(cargar)
           <option value="técnico">Técnico</option>
         </select>
       </div>
+
+      <!-- Filtro de departamento con búsqueda parcial -->
       <div class="col-md-3">
         <input v-model="filtroDepartamento" type="text" class="form-control"
           placeholder="Filtrar por departamento..." />
       </div>
+
+      <!-- Filtro de estado -->
       <div class="col-md-2">
         <select v-model="filtroEstado" class="form-select">
           <option value="">Todos los estados</option>
@@ -97,6 +117,8 @@ onMounted(cargar)
           <option value="desvinculado">Desvinculado</option>
         </select>
       </div>
+
+      <!-- Botón para limpiar filtros -->
       <div class="col-md-2">
         <button class="btn btn-outline-secondary w-100"
           @click="busqueda = ''; filtroNivel = ''; filtroDepartamento = ''; filtroEstado = ''">
@@ -122,6 +144,7 @@ onMounted(cargar)
         <div class="col-md-1">Alta</div>
       </div>
 
+      <!-- Listado de empleados -->
       <div class="list-group shadow-sm mb-4">
         <div v-for="e in empleadosPaginados" :key="e.id" class="list-group-item list-group-item-action"
           @click="router.push(`/empleados/${e.id}`)" style="cursor: pointer">
