@@ -1,3 +1,13 @@
+<!--
+  Vista de detalle de un empleado, accesible para administradores (cualquier empleado)
+  y para el propio empleado (solo su perfil)
+
+  - Visualización y edición inline de datos personales y laborales
+  - Cambio de contraseña (el admin no necesita la contraseña actual)
+  - Listado de incidencias asignadas con acceso directo al modal de detalle
+  - Aviso mediante modal si al cambiar el estado laboral se desasignan incidencias activas
+-->
+
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -22,9 +32,11 @@ const cargandoIncidencias = ref(false)
 const mensajeInfo = ref('')
 const erroresPassword = ref({})
 
+// Computed para control de permisos en la vista
 const esAdmin = computed(() => authStore.empleado?.nivel_acceso === 'administrador')
 const esPropioPerfil = computed(() => authStore.empleado?.id === empleado.value?.id)
 
+// Mapa de colores para los badges de estado de incidencia
 const estadosBadge = {
   creada: 'secondary',
   en_proceso: 'primary',
@@ -41,6 +53,7 @@ const passwordForm = ref({
   password_confirmar: ''
 })
 
+// Carga los datos del empleado por id de la URL
 const cargar = async () => {
   try {
     cargando.value = true
@@ -52,6 +65,7 @@ const cargar = async () => {
   }
 }
 
+// Activa el modo edición copiando los datos actuales para no modificar el original
 const activarEdicion = () => {
   empleadoEditado.value = { ...empleado.value }
   modoEdicion.value = true
@@ -62,13 +76,15 @@ const cancelarEdicion = () => {
   empleadoEditado.value = null
 }
 
+// Guarda los cambios y recarga las incidencias por si el estado laboral ha cambiado
 const guardar = async () => {
   try {
     cargando.value = true
     const res = await empleadosService.actualizar(empleado.value.id, empleadoEditado.value)
     empleado.value = res.empleado
     modoEdicion.value = false
-    await cargarIncidencias() // ← añade esto
+    await cargarIncidencias()
+    // Si el cambio de estado laboral desasignó incidencias, se informa
     if (res.incidenciasDesasignadas > 0) {
       mensajeInfo.value = `Se han desasignado ${res.incidenciasDesasignadas} incidencias activas.`
       const modal = new bootstrap.Modal(document.getElementById('modalInfo'))
@@ -81,13 +97,14 @@ const guardar = async () => {
   }
 }
 
+// Cambia la contraseña del empleado
+// El admin no necesita introducir la contraseña actual
 const cambiarPassword = async () => {
   errorPassword.value = null
   exitoPassword.value = false
   erroresPassword.value = {}
 
-  // Validaciones
-  if (!esAdmin && !campoObligatorio(passwordForm.value.password_actual)) {
+  if (!esAdmin.value && !campoObligatorio(passwordForm.value.password_actual)) {
     erroresPassword.value.password_actual = 'La contraseña actual es obligatoria'
   }
   if (!campoObligatorio(passwordForm.value.password_nueva)) {
@@ -113,6 +130,8 @@ const cambiarPassword = async () => {
   }
 }
 
+// Carga las incidencias asignadas al empleado
+// Se llama al montar y también tras guardar cambios para reflejar desasignaciones
 const cargarIncidencias = async () => {
   try {
     const data = await empleadosService.incidenciasAsignadas(route.params.id)
@@ -138,7 +157,8 @@ onMounted(async () => {
     <div v-else-if="error" class="alert alert-danger">{{ error }}</div>
 
     <div v-else-if="empleado">
-      <!-- Cabecera -->
+
+      <!-- Cabecera con nombre, nivel de acceso y estado laboral -->
       <div class="d-flex align-items-center gap-3 mb-4">
         <RouterLink to="/empleados" class="btn btn-outline-secondary btn-sm">← Volver</RouterLink>
         <h2 class="mb-0">{{ empleado.nombre }} {{ empleado.apellido1 }} {{ empleado.apellido2 }}</h2>
@@ -149,7 +169,7 @@ onMounted(async () => {
         <span v-else class="badge bg-danger">Baja</span>
       </div>
 
-      <!-- Datos -->
+      <!-- Datos del empleado con edición inline -->
       <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
           <span class="fw-bold">Datos del empleado</span>
@@ -166,6 +186,7 @@ onMounted(async () => {
         <div class="card-body">
           <div class="row g-3">
 
+            <!-- Datos personales — editables por admin y por el propio empleado -->
             <div class="col-md-4">
               <label class="form-label text-muted small">Nombre</label>
               <p v-if="!modoEdicion" class="mb-0 form-control-plaintext py-1">{{ empleado.nombre }}</p>
@@ -215,7 +236,7 @@ onMounted(async () => {
               <input v-else v-model="empleadoEditado.direccion" class="form-control" />
             </div>
 
-            <!-- Solo admin -->
+            <!-- Datos laborales — solo visibles y editables por el administrador -->
             <div class="col-md-4" v-if="esAdmin">
               <label class="form-label text-muted small">Puesto</label>
               <p v-if="!modoEdicion" class="mb-0 form-control-plaintext py-1">{{ empleado.puesto ?? '—' }}</p>
@@ -249,6 +270,7 @@ onMounted(async () => {
               </select>
             </div>
 
+            <!-- Fecha de contratación — solo lectura -->
             <div class="col-md-4">
               <label class="form-label text-muted small">Fecha de contratación</label>
               <p class="mb-0 form-control-plaintext py-1">{{ empleado.fecha_contratacion ? new
@@ -259,7 +281,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- Cambiar contraseña -->
+      <!-- Cambio de contraseña — accesible para admin y para el propio empleado -->
       <div class="card mb-4" v-if="esAdmin || esPropioPerfil">
         <div class="card-header fw-bold">Cambiar contraseña</div>
         <div class="card-body">
@@ -267,6 +289,7 @@ onMounted(async () => {
           <div v-if="exitoPassword" class="alert alert-success py-2">Contraseña actualizada correctamente</div>
           <div class="row g-3">
 
+            <!-- El técnico debe verificar su contraseña actual; el admin no -->
             <div class="col-md-4" v-if="!esAdmin">
               <label class="form-label">Contraseña actual</label>
               <input v-model="passwordForm.password_actual" type="password"
@@ -296,8 +319,8 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Incidencias -->
-    <div yclass="mt-2">
+    <!-- Incidencias asignadas al empleado — se cargan al montar y tras guardar cambios -->
+    <div class="mt-2">
       <h5>Incidencias asignadas</h5>
       <div v-if="cargandoIncidencias" class="text-center">
         <div class="spinner-border text-primary"></div>
@@ -317,6 +340,8 @@ onMounted(async () => {
         </div>
       </div>
     </div>
+
+    <!-- Modal informativo para avisar de incidencias desasignadas tras cambio de estado -->
     <ModalInfo id="modalInfo" titulo="Aviso" :mensaje="mensajeInfo" />
   </div>
 </template>

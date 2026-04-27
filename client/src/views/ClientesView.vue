@@ -1,3 +1,9 @@
+<!--
+  Vista principal del módulo de clientes.
+  Muestra el listado completo con búsqueda, filtros y paginación en el cliente
+  Cada fila es clicable y navega al detalle del cliente
+-->
+
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -18,6 +24,9 @@ const filtroActivo = ref('')
 const paginaActual = ref(1)
 const porPagina = 15
 
+// Carga el listado completo de clientes
+// Se opta por una carga total inicial delegando el filtrado al cliente
+// para mejorar la reactividad de la búsqueda
 const cargar = async () => {
   try {
     cargando.value = true
@@ -29,6 +38,8 @@ const cargar = async () => {
   }
 }
 
+// Lógica centralizada de filtrado
+// Implementa normalización de texto para ignorar tildes y mayúsculas
 const clientesFiltrados = computed(() => {
   return clientes.value.filter(c => {
     const coincideBusqueda = !busqueda.value ||
@@ -38,11 +49,13 @@ const clientesFiltrados = computed(() => {
       normalizar(c.dni_nif_cif).includes(normalizar(busqueda.value)) ||
       normalizar(c.telefono).includes(normalizar(busqueda.value))
     const coincideTipo = !filtroTipo.value || c.tipo_cliente === filtroTipo.value
+    // filtroActivo es string ('true'/'false'/'') porque viene de un <select>
     const coincideActivo = filtroActivo.value === '' || c.activo === (filtroActivo.value === 'true')
     return coincideBusqueda && coincideTipo && coincideActivo
   })
 })
 
+// Segmentación para paginación basada en el resultado ya filtrado
 const clientesPaginados = computed(() => {
   const inicio = (paginaActual.value - 1) * porPagina
   return clientesFiltrados.value.slice(inicio, inicio + porPagina)
@@ -52,6 +65,7 @@ const totalPaginas = computed(() => {
   return Math.ceil(clientesFiltrados.value.length / porPagina)
 })
 
+// Si se cambia cualquier filtro, volvemos a la página 1 para evitar listados vacíos
 watch([busqueda, filtroTipo, filtroActivo], () => {
   paginaActual.value = 1
 })
@@ -102,7 +116,7 @@ onMounted(cargar)
     </div>
 
     <div v-else>
-      <!-- Cabecera -->
+      <!-- Cabecera de columnas -->
       <div class="row fw-bold text-muted small px-3 mb-1">
         <div class="col-md-2">Nombre</div>
         <div class="col-md-2">Apellidos</div>
@@ -113,6 +127,7 @@ onMounted(cargar)
         <div class="col-md-2">Comunicaciones</div>
       </div>
 
+      <!-- Listado de clientes -->
       <div class="list-group shadow-sm mb-4">
         <div v-for="c in clientesPaginados" :key="c.id" class="list-group-item list-group-item-action"
           @click="router.push(`/clientes/${c.id}`)" style="cursor: pointer">
@@ -122,6 +137,7 @@ onMounted(cargar)
             <div class="col-md-3 text-muted small">{{ c.correo }}</div>
             <div class="col-md-1 text-muted small">{{ c.telefono }}</div>
             <div class="col-md-1">
+              <!-- text-capitalize aprovecha el CSS para capitalizar sin modificar el valor del enum -->
               <span class="badge bg-secondary text-capitalize">{{ c.tipo_cliente }}</span>
             </div>
             <div class="col-md-1">

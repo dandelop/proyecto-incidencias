@@ -1,14 +1,21 @@
+<!--
+  Vista de estadísticas generales de la aplicación. Solo accesible para administradores
+  Carga los datos de incidencias, clientes y equipos en paralelo y renderiza
+  cinco gráficos con Chart.js una vez el DOM está listo
+-->
+
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import api from '../services/axios.js'
 
+// Registro global de todos los componentes de Chart.js
 Chart.register(...registerables)
 
 const cargando = ref(true)
 const error = ref(null)
 
-// Referencias a los canvas
+// Referencias a los elementos canvas donde se renderizan los gráficos
 const chartEstados = ref(null)
 const chartPrioridades = ref(null)
 const chartMeses = ref(null)
@@ -17,16 +24,20 @@ const chartEquiposTipo = ref(null)
 
 const cargarYRenderizar = async () => {
   try {
+    // Carga en paralelo para minimizar el tiempo de espera
     const [incidencias, clientes, equipos] = await Promise.all([
       api.get('/incidencias').then(r => r.data),
       api.get('/clientes').then(r => r.data),
       api.get('/equipos').then(r => r.data)
     ])
 
+    // Oculta el spinner y espera a que Vue actualice el DOM
+    // antes de intentar acceder a los elementos canvas
     cargando.value = false
-    await nextTick()  // espera a que vue actualice el DOM
+    await nextTick()
 
-    // Incidencias por estado
+    // Gráfico 1: Incidencias por estado
+    // Los colores coinciden con los badges de Bootstrap usados en el resto de la app
     const coloresEstado = {
       creada: '#6c757d',
       en_proceso: '#0d6efd',
@@ -41,6 +52,7 @@ const cargarYRenderizar = async () => {
     incidencias.forEach(i => {
       estados[i.estado] = (estados[i.estado] || 0) + 1
     })
+
     new Chart(chartEstados.value, {
       type: 'doughnut',
       data: {
@@ -53,7 +65,8 @@ const cargarYRenderizar = async () => {
       options: { plugins: { legend: { position: 'bottom' } } }
     })
 
-    // Incidencias por prioridad
+    // Gráfico 2: Incidencias por prioridad
+    // Se fuerza el orden baja → media → alta → crítica para mayor claridad visual
     const coloresPrioridad = {
       baja: '#198754',
       media: '#ffc107',
@@ -82,7 +95,8 @@ const cargarYRenderizar = async () => {
       options: { plugins: { legend: { display: false } } }
     })
 
-    // Incidencias por mes
+    // Gráfico 3: Incidencias por mes
+    // Se usa una clave YYYY-MM para ordenar cronológicamente antes de mostrar
     const mesesMap = {}
     incidencias.forEach(i => {
       const fecha = new Date(i.fecha_creacion)
@@ -90,7 +104,6 @@ const cargarYRenderizar = async () => {
       mesesMap[key] = (mesesMap[key] || 0) + 1
     })
 
-    // Ordenamos cronológicamente
     const mesesOrdenados = Object.keys(mesesMap).sort()
     const etiquetas = mesesOrdenados.map(k => {
       const [year, month] = k.split('-')
@@ -112,11 +125,12 @@ const cargarYRenderizar = async () => {
       options: { plugins: { legend: { display: false } } }
     })
 
-    // Clientes por tipo
+    // Gráfico 4: Clientes por tipo
     const tiposCliente = {}
     clientes.forEach(c => {
       tiposCliente[c.tipo_cliente] = (tiposCliente[c.tipo_cliente] || 0) + 1
     })
+
     new Chart(chartClientesTipo.value, {
       type: 'doughnut',
       data: {
@@ -129,11 +143,12 @@ const cargarYRenderizar = async () => {
       options: { plugins: { legend: { position: 'bottom' } } }
     })
 
-    // Equipos por tipo
+    // Gráfico 5: Equipos por tipo
     const tiposEquipo = {}
     equipos.forEach(e => {
       tiposEquipo[e.tipo] = (tiposEquipo[e.tipo] || 0) + 1
     })
+
     new Chart(chartEquiposTipo.value, {
       type: 'bar',
       data: {
@@ -188,6 +203,7 @@ onMounted(cargarYRenderizar)
           </div>
         </div>
 
+        <!-- Gráfico de línea a ancho completo para mayor legibilidad -->
         <div class="col-md-12">
           <div class="card shadow-sm">
             <div class="card-header fw-bold">Incidencias por mes</div>

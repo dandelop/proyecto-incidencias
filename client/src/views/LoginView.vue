@@ -1,3 +1,11 @@
+<!--
+  Pantalla de inicio de sesión. Es la única vista pública de la aplicación.
+
+  - Valida el formato del correo y que la contraseña no esté vacía antes de enviar
+  - Al iniciar sesión correctamente, guarda los datos del empleado en el store global
+    y redirige a la vista de incidencias
+-->
+
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -12,6 +20,7 @@ const error = ref(null)
 const cargando = ref(false)
 const errores = ref({})
 
+// Validación del formulario
 const validar = () => {
   errores.value = {}
   if (!campoObligatorio(correo.value)) {
@@ -25,24 +34,20 @@ const validar = () => {
   return Object.keys(errores.value).length === 0
 }
 
+// Envío del formulario
 const login = async () => {
   if (!validar()) return
-
   try {
     cargando.value = true
     error.value = null
-
     const res = await api.post('/autenticacion/login', {
       correo: correo.value,
       password: password.value
     })
-
-    // Guarda los datos del empleado en la store global
+    // Guarda los datos del empleado en el store global y marca la sesión como activa
     authStore.empleado = res.data.empleado
     authStore.isLoggedIn = true
-
     router.push('/incidencias')
-
   } catch (err) {
     error.value = err.response?.data?.error || 'Error al conectar con el servidor'
   } finally {
@@ -76,6 +81,5 @@ const login = async () => {
         {{ cargando ? 'Iniciando sesión...' : 'Iniciar sesión' }}
       </button>
     </div>
-
   </div>
 </template>

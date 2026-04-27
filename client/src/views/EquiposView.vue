@@ -1,3 +1,12 @@
+<!--
+  Vista principal del módulo de equipos
+  Muestra los equipos en tarjetas con búsqueda, filtros y paginación
+  Al hacer clic en una tarjeta se abre un modal con el detalle completo
+  e historial de incidencias del equipo
+  Acepta el query param ?id= para abrir directamente el modal de un equipo
+  concreto al navegar desde otra vista (por ejemplo, desde el modal de incidencias)
+-->
+
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import equiposService from '../services/equiposService.js'
@@ -22,6 +31,7 @@ const filtroTipo = ref('')
 const paginaActual = ref(1)
 const porPagina = 6
 
+// Mapa de colores para los badges de estado de incidencia
 const estadosBadge = {
   creada: 'secondary',
   en_proceso: 'primary',
@@ -32,6 +42,7 @@ const estadosBadge = {
   cancelado: 'danger'
 }
 
+// Mapa de colores para los badges del tipo de dispositivo
 const tiposBadge = {
   smartphone: 'primary',
   portátil: 'info',
@@ -42,6 +53,7 @@ const tiposBadge = {
   otro: 'light'
 }
 
+// Carga el listado completo de equipos filtrado en el cliente
 const cargar = async () => {
   try {
     cargando.value = true
@@ -53,6 +65,7 @@ const cargar = async () => {
   }
 }
 
+// Lógica centralizada de filtrado con normalización de texto
 const equiposFiltrados = computed(() => {
   return equipos.value.filter(e => {
     const coincideBusqueda = !busqueda.value ||
@@ -65,6 +78,7 @@ const equiposFiltrados = computed(() => {
   })
 })
 
+// Segmentación para paginación basada en el resultado ya filtrado
 const equiposPaginados = computed(() => {
   const inicio = (paginaActual.value - 1) * porPagina
   return equiposFiltrados.value.slice(inicio, inicio + porPagina)
@@ -74,10 +88,12 @@ const totalPaginas = computed(() => {
   return Math.ceil(equiposFiltrados.value.length / porPagina)
 })
 
+// Si se cambia cualquier filtro, volvemos a la página 1 para evitar listados vacíos
 watch([busqueda, filtroTipo], () => {
   paginaActual.value = 1
 })
 
+// Abre el modal de detalle y carga el historial de incidencias del equipo seleccionado
 const abrirDetalle = async (equipo) => {
   equipoSeleccionado.value = equipo
   historial.value = []
@@ -96,6 +112,7 @@ const abrirDetalle = async (equipo) => {
 
 onMounted(async () => {
   await cargar()
+  // Si se navega con ?id=X, se abre directamente el modal de ese equipo
   if (route.query.id) {
     const equipo = equipos.value.find(e => e.id === Number(route.query.id))
     if (equipo) await abrirDetalle(equipo)
@@ -136,7 +153,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Tarjetas -->
+    <!-- Tarjetas de equipos -->
     <div v-if="cargando" class="text-center">
       <div class="spinner-border text-primary"></div>
     </div>
@@ -184,7 +201,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Modal detalle -->
+    <!-- Modal de detalle del equipo con historial de incidencias -->
     <div class="modal fade" id="modalEquipo" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -199,6 +216,7 @@ onMounted(async () => {
                 <p><span :class="`badge bg-${tiposBadge[equipoSeleccionado.tipo]} text-capitalize`">{{
                   equipoSeleccionado.tipo }}</span></p>
               </div>
+              <!-- El estado refleja la condición del equipo al momento de la entrega -->
               <div class="col-md-6">
                 <p class="text-muted small mb-1">Estado de entrada</p>
                 <p>{{ equipoSeleccionado.estado }}</p>
@@ -218,6 +236,7 @@ onMounted(async () => {
             </div>
 
             <hr>
+            <!-- Historial de incidencias — permite ver si el equipo ya ha entrado antes -->
             <h6>Historial de incidencias</h6>
             <div v-if="cargandoHistorial" class="text-center">
               <div class="spinner-border spinner-border-sm text-primary"></div>

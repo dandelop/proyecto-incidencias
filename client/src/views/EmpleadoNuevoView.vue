@@ -1,3 +1,10 @@
+<!--
+  EmpleadoNuevoView.vue
+  Formulario de alta de un nuevo empleado. Solo accesible para administradores.
+  Tras la creación exitosa, redirige al detalle del empleado recién creado.
+  La contraseña se envía en texto plano y el backend se encarga de hashearla.
+-->
+
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -9,6 +16,7 @@ const error = ref(null)
 const cargando = ref(false)
 const errores = ref({})
 
+// Modelo del formulario con valores por defecto
 const empleado = ref({
   nombre: '',
   apellido1: '',
@@ -26,6 +34,7 @@ const empleado = ref({
   password_hash: ''
 })
 
+// Valida todos los campos obligatorios y los formatos antes de enviar
 const validar = () => {
   errores.value = {}
   if (!campoObligatorio(empleado.value.nombre)) errores.value.nombre = 'El nombre es obligatorio'
@@ -52,28 +61,13 @@ const validar = () => {
 
 const submit = async () => {
   if (!validar()) return
-
   if (cargando.value) return
   cargando.value = true
   error.value = null
 
   try {
-    if (!empleado.value.nombre || !empleado.value.apellido1) {
-      error.value = 'Nombre y primer apellido son obligatorios'
-      return
-    }
-    if (!empleado.value.correo) {
-      error.value = 'El correo es obligatorio'
-      return
-    }
-    if (!empleado.value.password_hash) {
-      error.value = 'La contraseña es obligatoria'
-      return
-    }
-
     const nuevo = await empleadosService.registrar(empleado.value)
     router.push(`/empleados/${nuevo.id}`)
-
   } catch (err) {
     error.value = err.response?.data?.error || 'Error al crear el empleado'
   } finally {
@@ -95,6 +89,7 @@ const submit = async () => {
       <div class="card-body">
         <div class="row g-3">
 
+          <!-- Datos personales -->
           <div class="col-md-4">
             <label class="form-label">Nombre *</label>
             <input v-model="empleado.nombre" type="text"
@@ -114,6 +109,7 @@ const submit = async () => {
             <input v-model="empleado.apellido2" type="text" class="form-control" />
           </div>
 
+          <!-- Identificación y contacto -->
           <div class="col-md-4">
             <label class="form-label">DNI/NIF *</label>
             <input v-model="empleado.dni_nif" type="text"
@@ -135,6 +131,7 @@ const submit = async () => {
             <div class="invalid-feedback">{{ errores.correo }}</div>
           </div>
 
+          <!-- Fechas -->
           <div class="col-md-4">
             <label class="form-label">Fecha de nacimiento *</label>
             <input v-model="empleado.fecha_nacimiento" type="date"
@@ -149,6 +146,7 @@ const submit = async () => {
             <div class="invalid-feedback">{{ errores.fecha_contratacion }}</div>
           </div>
 
+          <!-- Datos laborales -->
           <div class="col-md-4">
             <label class="form-label">Puesto *</label>
             <input v-model="empleado.puesto" type="text"
@@ -181,6 +179,7 @@ const submit = async () => {
             </select>
           </div>
 
+          <!-- Dirección y contraseña -->
           <div class="col-md-6">
             <label class="form-label">Dirección *</label>
             <input v-model="empleado.direccion" type="text"
@@ -188,6 +187,7 @@ const submit = async () => {
             <div class="invalid-feedback">{{ errores.direccion }}</div>
           </div>
 
+          <!-- La contraseña se envía como password_hash pero el backend la hashea con bcrypt -->
           <div class="col-md-6">
             <label class="form-label">Contraseña *</label>
             <input v-model="empleado.password_hash" type="password"

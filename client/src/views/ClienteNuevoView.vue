@@ -1,3 +1,8 @@
+<!--
+  Formulario de alta de un nuevo cliente
+  Tras la creación exitosa, redirige al detalle del cliente recién creado
+-->
+
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -9,6 +14,7 @@ const error = ref(null)
 const cargando = ref(false)
 const errores = ref({})
 
+// Modelo del formulario con valores por defecto
 const cliente = ref({
   nombre: '',
   apellido1: '',
@@ -25,6 +31,7 @@ const cliente = ref({
   activo: true
 })
 
+// Valida los campos obligatorios y los formatos antes de enviar
 const validar = () => {
   errores.value = {}
   if (!campoObligatorio(cliente.value.nombre)) errores.value.nombre = 'El nombre es obligatorio'
@@ -40,19 +47,14 @@ const validar = () => {
   return Object.keys(errores.value).length === 0
 }
 
+// Gestiona el envío del formulario para la creación de un nuevo cliente
 const submit = async () => {
   if (!validar()) return
-
   if (cargando.value) return
   cargando.value = true
   error.value = null
 
   try {
-    if (!cliente.value.nombre || !cliente.value.apellido1) {
-      error.value = 'Nombre y primer apellido son obligatorios'
-      return
-    }
-
     const nuevo = await clientesService.insertar(cliente.value)
     router.push(`/clientes/${nuevo.id}`)
 
@@ -77,6 +79,7 @@ const submit = async () => {
       <div class="card-body">
         <div class="row g-3">
 
+          <!-- Datos personales -->
           <div class="col-md-4">
             <label class="form-label">Nombre *</label>
             <input v-model="cliente.nombre" type="text" :class="['form-control', errores.nombre ? 'is-invalid' : '']" />
@@ -95,6 +98,7 @@ const submit = async () => {
             <input v-model="cliente.apellido2" type="text" class="form-control" />
           </div>
 
+          <!-- Identificación y contacto -->
           <div class="col-md-4">
             <label class="form-label">DNI/NIF/CIF *</label>
             <input v-model="cliente.dni_nif_cif" type="text"
@@ -114,6 +118,7 @@ const submit = async () => {
             <div class="invalid-feedback">{{ errores.correo }}</div>
           </div>
 
+          <!-- Dirección -->
           <div class="col-md-6">
             <label class="form-label">Dirección</label>
             <input v-model="cliente.direccion" type="text" class="form-control" />
@@ -129,6 +134,7 @@ const submit = async () => {
             <input v-model="cliente.codigo_postal" type="text" class="form-control" />
           </div>
 
+          <!-- Clasificación -->
           <div class="col-md-4">
             <label class="form-label">Tipo cliente</label>
             <select v-model="cliente.tipo_cliente" class="form-select">
@@ -143,6 +149,7 @@ const submit = async () => {
             <textarea v-model="cliente.observaciones" class="form-control" rows="3"></textarea>
           </div>
 
+          <!-- Consentimiento para comunicaciones -->
           <div class="col-12">
             <div class="form-check">
               <input v-model="cliente.acepta_comunicaciones" type="checkbox" class="form-check-input"

@@ -1,3 +1,14 @@
+<!--
+  Vista de detalle de un cliente individual
+
+  - Visualización completa de los datos del cliente
+  - Edición inline: al activar el modo edición los campos de texto se convierten en inputs
+  - Dar de baja lógica (marca como inactivo y cancela sus incidencias activas)
+  - Dar de alta (reactiva al cliente)
+  - Eliminación física con confirmación (bloqueada si tiene incidencias activas)
+  - Listado de incidencias asociadas con acceso directo al modal con los detalles
+-->
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -10,15 +21,16 @@ import ModalInfo from '../components/ModalInfo.vue'
 const route = useRoute()
 const router = useRouter()
 const cliente = ref(null)
-const clienteEditado = ref(null)
+const clienteEditado = ref(null)   // copia del cliente para edición, evita modificar el original hasta guardar
 const incidencias = ref([])
 const error = ref(null)
 const cargando = ref(false)
 const modoEdicion = ref(false)
 const mostrarIncidencias = ref(false)
 const cargandoIncidencias = ref(false)
-const mensajeInfo = ref('')
+const mensajeInfo = ref('')        // mensaje a mostrar en el modal informativo
 
+// Mapeo de estados de incidencia a clases de color de Bootstrap
 const estadosBadge = {
   creada: 'secondary',
   en_proceso: 'primary',
@@ -29,6 +41,7 @@ const estadosBadge = {
   cancelado: 'danger'
 }
 
+// Carga los datos del cliente por su id (obtenido de la URL)
 const cargar = async () => {
   try {
     cargando.value = true
@@ -40,16 +53,19 @@ const cargar = async () => {
   }
 }
 
+// Activa el modo edición clonando el objeto cliente para no modificar el original
 const activarEdicion = () => {
   clienteEditado.value = { ...cliente.value }
   modoEdicion.value = true
 }
 
+// Cancela la edición descartando los cambios
 const cancelarEdicion = () => {
   modoEdicion.value = false
   clienteEditado.value = null
 }
 
+// Guarda los cambios enviándolos al servidor y actualiza el estado local
 const guardar = async () => {
   try {
     cargando.value = true
@@ -62,6 +78,8 @@ const guardar = async () => {
   }
 }
 
+// Baja lógica: marca al cliente como inactivo
+// Si tenía incidencias activas, el servidor las cancela
 const darDeBaja = async () => {
   try {
     const res = await clientesService.darDeBaja(cliente.value.id)
@@ -76,6 +94,8 @@ const darDeBaja = async () => {
   }
 }
 
+// Eliminación física del cliente
+// El servidor bloquea la operación si el cliente tiene incidencias activas
 const eliminar = async () => {
   try {
     await clientesService.eliminar(cliente.value.id)
@@ -89,6 +109,7 @@ const eliminar = async () => {
   }
 }
 
+// Muestra u oculta el listado de incidencias del cliente
 const verIncidencias = async () => {
   if (mostrarIncidencias.value) {
     mostrarIncidencias.value = false
@@ -105,6 +126,7 @@ const verIncidencias = async () => {
   }
 }
 
+// Reactiva un cliente dado de baja
 const darDeAlta = async () => {
   try {
     cliente.value = await clientesService.darDeAlta(cliente.value.id)
@@ -126,7 +148,8 @@ onMounted(cargar)
     <div v-else-if="error" class="alert alert-danger">{{ error }}</div>
 
     <div v-else-if="cliente">
-      <!-- Cabecera -->
+
+      <!-- Cabecera con nombre, estado y botón de retorno -->
       <div class="d-flex align-items-center gap-3 mb-4">
         <RouterLink to="/clientes" class="btn btn-outline-secondary btn-sm">← Volver</RouterLink>
         <h2 class="mb-0">{{ cliente.nombre }} {{ cliente.apellido1 }} {{ cliente.apellido2 }}</h2>
@@ -134,7 +157,7 @@ onMounted(cargar)
         <span v-else class="badge bg-danger">Baja</span>
       </div>
 
-      <!-- Datos -->
+      <!-- Tarjeta de datos del cliente con modo edición inline -->
       <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
           <span class="fw-bold">Datos del cliente</span>
@@ -214,6 +237,7 @@ onMounted(cargar)
               </select>
             </div>
 
+            <!-- Fechas de alta y baja — solo lectura, gestionadas por el sistema -->
             <div class="col-md-4">
               <label class="form-label text-muted small">Fecha de alta</label>
               <p class="mb-0">{{ new Date(cliente.fecha_alta).toLocaleDateString('es-ES') }}</p>
@@ -246,7 +270,7 @@ onMounted(cargar)
         </div>
       </div>
 
-      <!-- Acciones -->
+      <!-- Acciones: ver incidencias, gestión de alta/baja y eliminación -->
       <div class="d-flex gap-3 mb-4">
         <button class="btn btn-outline-primary" @click="verIncidencias">
           {{ mostrarIncidencias ? 'Ocultar incidencias' : 'Ver incidencias' }}
@@ -262,7 +286,7 @@ onMounted(cargar)
         </button>
       </div>
 
-      <!-- Incidencias -->
+      <!-- Listado de incidencias asociadas al cliente -->
       <div v-if="mostrarIncidencias" class="mt-2">
         <h5>Incidencias</h5>
         <div v-if="cargandoIncidencias" class="text-center">
@@ -284,12 +308,18 @@ onMounted(cargar)
         </div>
       </div>
     </div>
+
+    <!-- Modales de confirmación para acciones destructivas -->
     <ModalConfirmacion id="modalBaja" titulo="¿Dar de baja?"
       mensaje="Se marcará al cliente como inactivo. Puedes reactivarlo más adelante." textoConfirmar="Confirmar"
       @confirmar="darDeBaja" />
+
     <ModalConfirmacion id="modalEliminar" titulo="¿Eliminar permanentemente?"
       mensaje="Esta acción no se puede deshacer. Se eliminarán todos los datos del cliente." :peligroso="true"
       textoConfirmar="Eliminar" @confirmar="eliminar" />
+
+    <!-- Modal informativo -->
     <ModalInfo id="modalInfo" titulo="Aviso" :mensaje="mensajeInfo" />
+
   </div>
 </template>

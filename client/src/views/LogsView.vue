@@ -1,8 +1,23 @@
+<!--
+  Vista de auditoría del sistema. Accesible únicamente para administradores.
+
+  Muestra el registro de acciones realizadas en la aplicación: inicios de sesión,
+  modificaciones de datos, creaciones y eliminaciones. Cada entrada incluye
+  la fecha, el tipo de acción, los detalles, el empleado responsable y la IP de origen.
+
+  Funcionalidades:
+  - Búsqueda de texto libre por detalles, nombre de empleado o IP
+  - Filtro por tipo de acción
+  - Paginación en cliente (20 registros por página)
+  - Código de color por tipo de acción mediante badges de Bootstrap
+-->
+
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { normalizar } from '../utils/texto.js'
 import api from '../services/axios.js'
 
+// Estado
 const logs = ref([])
 const error = ref(null)
 const cargando = ref(false)
@@ -15,6 +30,7 @@ const filtroAccion = ref('')
 const paginaActual = ref(1)
 const porPagina = 20
 
+// Lista de tipos de acción registrados en el sistema
 const acciones = [
   'LOGIN_EXITOSO', 'LOGIN_FALLIDO', 'LOGOUT',
   'INCIDENCIA_CREADA', 'INCIDENCIA_MODIFICADA', 'INCIDENCIA_ELIMINADA',
@@ -22,6 +38,7 @@ const acciones = [
   'EMPLEADO_CREADO', 'EMPLEADO_MODIFICADO', 'PASSWORD_CAMBIADA'
 ]
 
+// Mapa de colores Bootstrap por tipo de acción
 const accionBadge = {
   LOGIN_EXITOSO: 'success',
   LOGIN_FALLIDO: 'danger',
@@ -38,6 +55,7 @@ const accionBadge = {
   PASSWORD_CAMBIADA: 'warning'
 }
 
+// Carga de datos
 const cargar = async () => {
   try {
     cargando.value = true
@@ -50,6 +68,7 @@ const cargar = async () => {
   }
 }
 
+// Filtrado y paginación
 const logsFiltrados = computed(() => {
   return logs.value.filter(l => {
     const coincideBusqueda = !busqueda.value ||
@@ -71,6 +90,7 @@ const totalPaginas = computed(() => {
   return Math.ceil(logsFiltrados.value.length / porPagina)
 })
 
+// Resetea la página al cambiar cualquier filtro para evitar páginas vacías
 watch([busqueda, filtroAccion], () => {
   paginaActual.value = 1
 })
@@ -87,7 +107,7 @@ onMounted(cargar)
 
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
 
-    <!-- Filtros -->
+    <!-- FILTROS -->
     <div class="row g-3 mb-4">
       <div class="col-md-5">
         <input v-model="busqueda" type="text" class="form-control"
@@ -111,7 +131,8 @@ onMounted(cargar)
     </div>
 
     <div v-else>
-      <!-- Cabecera -->
+
+      <!-- CABECERA DE COLUMNAS -->
       <div class="row fw-bold text-muted small px-3 mb-1">
         <div class="col-md-2">Fecha</div>
         <div class="col-md-2">Acción</div>
@@ -120,6 +141,7 @@ onMounted(cargar)
         <div class="col-md-2">IP</div>
       </div>
 
+      <!-- LISTADO DE LOGS -->
       <div class="list-group shadow-sm mb-4">
         <div v-for="log in logsPaginados" :key="log.id" class="list-group-item">
           <div class="row align-items-center">
@@ -140,7 +162,7 @@ onMounted(cargar)
         </div>
       </div>
 
-      <!-- Paginación -->
+      <!-- PAGINACIÓN -->
       <div class="d-flex justify-content-center mt-4" v-if="totalPaginas > 1">
         <nav>
           <ul class="pagination">
@@ -156,6 +178,7 @@ onMounted(cargar)
           </ul>
         </nav>
       </div>
+
     </div>
   </div>
 </template>

@@ -1,3 +1,13 @@
+<!--
+  Formulario de creación de incidencias. Está dividido en tres secciones:
+  1. Cliente: búsqueda de cliente existente o creación de uno nuevo sobre la marcha
+  2. Incidencia: datos de la incidencia a registrar
+  3. Equipo: datos del dispositivo a reparar, con detección por número de serie
+
+  El formulario gestiona la creación encadenada de hasta tres entidades:
+  cliente (opcional) -> equipo (o reutilización de uno ya existente) -> incidencia
+-->
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -19,16 +29,17 @@ const busqueda = ref('')
 const clientes = ref([])
 const clienteSeleccionado = ref(null)
 const mostrarFormCliente = ref(false)
-const indiceSeleccionado = ref(-1)
+const indiceSeleccionado = ref(-1) // para navegación con teclado en los resultados
 
-// Bísqueda de equipo
+// Búsqueda de equipo por serial
 const equipoExistente = ref(null)
 const buscandoSerial = ref(false)
 
-// Empleados para el select de técnico
+// Empleados activos para el select de técnico asignado
 const empleados = ref([])
 
-// Formulario cliente nuevo
+// Modelos de los formularios
+
 const nuevoCliente = ref({
   nombre: '',
   apellido1: '',
@@ -44,7 +55,6 @@ const nuevoCliente = ref({
   activo: true
 })
 
-// Formulario equipo
 const equipo = ref({
   nombre: '',
   tipo: '',
@@ -54,7 +64,6 @@ const equipo = ref({
   estado: 'usado'
 })
 
-// Formulario incidencia
 const incidencia = ref({
   titulo: '',
   descripcion: '',
@@ -63,8 +72,12 @@ const incidencia = ref({
   presupuesto: null
 })
 
+// Lógica de búsqueda de clientes
+
 const clientesFiltrados = ref([])
 
+// Filtra la lista de clientes según el texto introducido.
+// Requiere mínimo 2 caracteres para evitar resultados excesivos
 const buscarCliente = () => {
   if (busqueda.value.length < 2) {
     clientesFiltrados.value = []
@@ -86,28 +99,37 @@ const seleccionarCliente = (cliente) => {
   mostrarFormCliente.value = false
 }
 
+// Genera un código provisional para la incidencia
+// El código definitivo (INC-AÑO-ID) lo asigna el backend tras la inserción
 const generarCodigo = () => {
   const año = new Date().getFullYear()
   const num = String(Math.floor(Math.random() * 1000)).padStart(3, '0')
   return `INC-${año}-${num}`
 }
 
+// Búsqueda de equipo por serial
+
+// Si el serial introducido coincide con un equipo existente, se reutiliza
+// en vez de crear uno nuevo. Se dispara al salir del campo o al pulsar la lupa.
 const buscarPorSerial = async () => {
   if (!equipo.value.serial) return
   try {
     buscandoSerial.value = true
     equipoExistente.value = await equiposService.buscarPorSerial(equipo.value.serial)
   } catch {
+    // 404 significa que no existe — se creará uno nuevo al enviar el formulario
     equipoExistente.value = null
   } finally {
     buscandoSerial.value = false
   }
 }
 
+// Validación del formulario
+
 const validar = () => {
   errores.value = {}
 
-  // Cliente
+  // Cliente obligatorio: seleccionado o creando uno nuevo
   if (!clienteSeleccionado.value && !mostrarFormCliente.value) {
     errores.value.cliente = 'Selecciona o crea un cliente'
   }
@@ -117,10 +139,10 @@ const validar = () => {
     if (!campoObligatorio(nuevoCliente.value.dni_nif_cif)) errores.value.clienteDni = 'El DNI/NIF/CIF es obligatorio'
   }
 
-  // Incidencia
+  // Título de la incidencia obligatorio
   if (!campoObligatorio(incidencia.value.titulo)) errores.value.titulo = 'El título es obligatorio'
 
-  // Equipo
+  // Si no hay equipo existente por serial, los campos básicos del equipo son obligatorios
   if (!equipoExistente.value) {
     if (!campoObligatorio(equipo.value.nombre)) errores.value.equipoNombre = 'El nombre del equipo es obligatorio'
     if (!campoObligatorio(equipo.value.tipo)) errores.value.equipoTipo = 'El tipo del equipo es obligatorio'
@@ -129,46 +151,41 @@ const validar = () => {
   return Object.keys(errores.value).length === 0
 }
 
+// Envío del formulario
+
 const submit = async () => {
   if (!validar()) return
-
   if (cargando.value) return
   cargando.value = true
   error.value = null
 
   try {
-    cargando.value = true
-    error.value = null
-
-    // Si hay serial y aún no ha buscado, busca primero. 
-    // También sirve el botón de lupa o se hace solo al hacer clic fuera del campo.
+    // Si hay serial pero aún no se ha buscado, buscar antes de continuar
     if (equipo.value.serial && !equipoExistente.value) {
       await buscarPorSerial()
     }
 
-    // 1. Crear cliente si es nuevo
+    // 1. Crear cliente nuevo si el formulario inline está activo
     let idCliente = clienteSeleccionado.value?.id
     if (mostrarFormCliente.value) {
       const clienteCreado = await clientesService.insertar(nuevoCliente.value)
       idCliente = clienteCreado.id
     }
 
-    // Asegurar que hay un cliente antes de continuar
     if (!idCliente) {
       error.value = 'Selecciona o crea un cliente'
       return
     }
 
-    // 2. Crear equipo o usar el existente
+    // 2. Reutilizar equipo existente o crear uno nuevo
+    // Se usa spread para evitar pasar el Proxy reactivo de Vue directamente a axios
     let idEquipo = equipoExistente.value?.id
     if (!idEquipo) {
-
-      // proxy da error (comprobar ahora)
       const equipoCreado = await equiposService.insertar({ ...equipo.value })
       idEquipo = equipoCreado.id
     }
 
-    // 3. Crear incidencia
+    // 3. Crear la incidencia vinculando cliente, equipo y empleado creador
     await incidenciasService.insertar({
       ...incidencia.value,
       codigo: generarCodigo(),
@@ -181,7 +198,6 @@ const submit = async () => {
 
     router.push('/incidencias')
 
-    // Error genérico
   } catch (err) {
     error.value = err.response?.data?.error || 'Error al crear la incidencia'
   } finally {
@@ -189,6 +205,7 @@ const submit = async () => {
   }
 }
 
+// Carga inicial de clientes y empleados activos
 onMounted(async () => {
   clientes.value = await clientesService.listarTodos()
   empleados.value = await empleadosService.listarActivos()
@@ -202,12 +219,14 @@ onMounted(async () => {
       <h2 class="mb-0">Nueva incidencia</h2>
     </div>
 
-    <!-- 1 BUSCAR CLIENTE -->
+    <!-- 1: CLIENTE -->
     <div class="card mb-4">
       <div class="card-header fw-bold">1. Cliente</div>
       <div class="card-body">
         <div class="mb-3 position-relative">
           <label class="form-label">Buscar cliente existente</label>
+
+          <!-- Buscador con navegación por teclado -->
           <input v-model="busqueda" @input="() => { buscarCliente(); indiceSeleccionado = -1 }"
             @keydown.down.prevent="indiceSeleccionado = Math.min(indiceSeleccionado + 1, clientesFiltrados.length - 1)"
             @keydown.up.prevent="indiceSeleccionado = Math.max(indiceSeleccionado - 1, -1)"
@@ -215,7 +234,7 @@ onMounted(async () => {
             type="text" class="form-control" placeholder="Nombre, apellido, correo o DNI..."
             :disabled="mostrarFormCliente" />
 
-          <!-- Resultados búsqueda -->
+          <!-- Resultados del buscador -->
           <ul v-if="clientesFiltrados.length" class="list-group position-absolute w-100 z-3 shadow">
             <li v-for="(c, index) in clientesFiltrados" :key="c.id"
               :class="['list-group-item list-group-item-action', { active: index === indiceSeleccionado }]"
@@ -238,7 +257,7 @@ onMounted(async () => {
           + Crear nuevo cliente
         </button>
 
-        <!-- Formulario nuevo cliente -->
+        <!-- Formulario de creación de nuevo cliente -->
         <div v-if="mostrarFormCliente">
           <hr>
           <h6>Datos del nuevo cliente</h6>
@@ -320,7 +339,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- 2 INCIDENCIA -->
+    <!-- 2: INCIDENCIA -->
     <div class="card mb-4">
       <div class="card-header fw-bold">2. Incidencia</div>
       <div class="card-body">
@@ -362,11 +381,12 @@ onMounted(async () => {
             <label class="form-label">Presupuesto (€)</label>
             <input v-model="incidencia.presupuesto" type="number" class="form-control" />
           </div>
+
         </div>
       </div>
     </div>
 
-    <!-- 3 EQUIPO -->
+    <!-- 3: EQUIPO -->
     <div class="card mb-4">
       <div class="card-header fw-bold">3. Equipo</div>
       <div class="card-body">
@@ -405,6 +425,7 @@ onMounted(async () => {
             <input v-model="equipo.modelo" type="text" class="form-control" />
           </div>
 
+          <!-- Número de serie con detección automática de equipo existente -->
           <div class="col-md-4">
             <label class="form-label">Número de serie</label>
             <div class="input-group">
@@ -414,11 +435,14 @@ onMounted(async () => {
                 {{ buscandoSerial ? '...' : '🔍' }}
               </button>
             </div>
+            <!-- Aviso de equipo encontrado — se utilizará ese para la incidencia -->
             <div v-if="equipoExistente" class="alert alert-info mt-2 py-2 small">
               ✅ Equipo encontrado: <strong>{{ equipoExistente.nombre }}</strong> — se usará este equipo
             </div>
           </div>
 
+          <!-- Estado de entrada: refleja la condición física del equipo al recibirlo
+               Sirve como registro legal ante posibles reclamaciones del cliente -->
           <div class="col-md-6">
             <label class="form-label">Estado de entrada *</label>
             <select v-model="equipo.estado" class="form-select">
@@ -435,6 +459,7 @@ onMounted(async () => {
       </div>
     </div>
 
+    <!-- Botones de acción y mensaje de error global -->
     <div class="d-flex justify-content-end gap-3">
       <RouterLink to="/incidencias" class="btn btn-outline-secondary">Cancelar</RouterLink>
       <button class="btn btn-primary" @click.prevent="submit" :disabled="cargando">
@@ -442,5 +467,6 @@ onMounted(async () => {
       </button>
     </div>
     <div v-if="error" class="mt-3 alert alert-danger">{{ error }}</div>
+
   </div>
 </template>

@@ -1,30 +1,32 @@
+/*
+  Configuración del enrutador de la aplicación (Vue Router)
+
+  Las rutas usan lazy loading mediante import() dinámico para cargar cada vista
+  solo cuando el usuario navega a ella, mejorando el rendimiento inicial
+
+  Metadatos de ruta:
+  - requiresAuth: la ruta requiere sesión activa
+  - soloAdmin:    la ruta requiere nivel_acceso 'administrador'
+*/
+
 import { createRouter, createWebHistory } from 'vue-router'
 import { authStore } from '../store/auth.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      redirect: '/login'
-    },
+
+    // Redirige la raíz al login por defecto
+    { path: '/', redirect: '/login' },
+
+    // Página de login — única ruta pública
     {
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginView.vue')
     },
-    {
-      path: '/empleados',
-      name: 'empleados',
-      meta: { requiresAuth: true, soloAdmin: true },
-      component: () => import('../views/EmpleadosView.vue')
-    },
-    {
-      path: '/clientes',
-      name: 'clientes',
-      meta: { requiresAuth: true },
-      component: () => import('../views/ClientesView.vue')
-    },
+
+    // Gestión de incidencias
     {
       path: '/incidencias',
       name: 'incidencias',
@@ -32,16 +34,18 @@ const router = createRouter({
       component: () => import('../views/IncidenciasView.vue')
     },
     {
-      path: '/equipos',
-      name: 'equipos',
-      meta: { requiresAuth: true },
-      component: () => import('../views/EquiposView.vue')
-    },
-    {
       path: '/incidencias/nueva',
       name: 'incidencia-nueva',
       meta: { requiresAuth: true },
       component: () => import('../views/IncidenciaNuevaView.vue')
+    },
+
+    // Gestión de clientes
+    {
+      path: '/clientes',
+      name: 'clientes',
+      meta: { requiresAuth: true },
+      component: () => import('../views/ClientesView.vue')
     },
     {
       path: '/clientes/nuevo',
@@ -55,17 +59,29 @@ const router = createRouter({
       meta: { requiresAuth: true },
       component: () => import('../views/ClienteDetalleView.vue')
     },
+
+    // Gestión de equipos
     {
-      path: '/empleados',
-      name: 'empleados',
-      meta: { requiresAuth: true, soloAdmin: true },
-      component: () => import('../views/EmpleadosView.vue')
+      path: '/equipos',
+      name: 'equipos',
+      meta: { requiresAuth: true },
+      component: () => import('../views/EquiposView.vue')
     },
+
+    // Perfil del empleado logueado — accesible para todos los roles
     {
       path: '/perfil',
       name: 'perfil',
       meta: { requiresAuth: true },
       component: () => import('../views/PerfilView.vue')
+    },
+
+    // Gestión de empleados — solo administradores
+    {
+      path: '/empleados',
+      name: 'empleados',
+      meta: { requiresAuth: true, soloAdmin: true },
+      component: () => import('../views/EmpleadosView.vue')
     },
     {
       path: '/empleados/nuevo',
@@ -79,6 +95,8 @@ const router = createRouter({
       meta: { requiresAuth: true },
       component: () => import('../views/EmpleadoDetalleView.vue')
     },
+
+    // Auditoría y estadísticas — solo administradores
     {
       path: '/logs',
       name: 'logs',
@@ -91,23 +109,25 @@ const router = createRouter({
       meta: { requiresAuth: true, soloAdmin: true },
       component: () => import('../views/EstadisticasView.vue')
     },
-    {
-      path: '/:pathMatch(.*)*',
-      redirect: '/'
-    }
+
+    // Catch-all: cualquier ruta desconocida redirige a incidencias
+    // El navigation guard se encargará de redirigir al login si no hay sesión
+    { path: '/:pathMatch(.*)*', redirect: '/incidencias' }
   ],
 })
 
 // Navigation guard — se ejecuta antes de cada cambio de ruta
 router.beforeEach(async (to, from) => {
 
-  // Limpia backdrops de bootstrap al navegar
+  // Limpia backdrops huérfanos de Bootstrap que puedan quedar al navegar
+  // desde una vista con modal abierto
   document.querySelectorAll('.modal-backdrop').forEach(el => el.remove())
   document.body.classList.remove('modal-open')
   document.body.style.overflow = ''
   document.body.style.paddingRight = ''
 
-  // esperar a que termine de cargar
+  // Espera a que App.vue termine de comprobar la sesión con /autenticacion/me
+  // antes de evaluar cualquier condición de acceso
   if (authStore.cargando) {
     await new Promise(resolve => {
       const interval = setInterval(() => {
@@ -119,14 +139,19 @@ router.beforeEach(async (to, from) => {
     })
   }
 
-  const requiresAuth = to.meta.requiresAuth
-  const soloAdmin = to.meta.soloAdmin
+  // Si el usuario ya está autenticado e intenta acceder al login,
+  // se le redirige directamente a incidencias
+  if (to.name === 'login' && authStore.isLoggedIn) {
+    return { name: 'incidencias' }
+  }
 
-  if (requiresAuth && !authStore.isLoggedIn) {
+  // Ruta protegida sin sesión activa → login
+  if (to.meta.requiresAuth && !authStore.isLoggedIn) {
     return { name: 'login' }
   }
 
-  if (soloAdmin && authStore.empleado?.nivel_acceso !== 'administrador') {
+  // Ruta exclusiva de administrador con usuario técnico → incidencias
+  if (to.meta.soloAdmin && authStore.empleado?.nivel_acceso !== 'administrador') {
     return { name: 'incidencias' }
   }
 })
