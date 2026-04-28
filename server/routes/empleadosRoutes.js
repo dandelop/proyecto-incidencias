@@ -1,54 +1,41 @@
+/*
+  Define las rutas de la API para la gestión de empleados.
+  Todas las rutas requieren autenticación (aplicada globalmente en routes/index.js)
+  El nivel de acceso varía según la operación:
+  - Gestión completa: solo administrador
+  - Perfil propio, cambio de contraseña y actualización: administrador y técnico
+    (la lógica de restricción por propiedad del recurso se aplica en el controller)
+ 
+  Importante: las rutas específicas van antes que las rutas con parámetros (:id)
+  para evitar que Express interprete palabras clave como IDs
+ */
+
 import { Router } from 'express'
 import empleadosController from '../controllers/empleadosController.js'
 import { nivelAcceso } from '../middlewares/autenticacion.js'
 
 const router = Router()
 
-// Muestra todos los empleados
+// Rutas exclusivas para administrador
 router.get('/', nivelAcceso('administrador'), empleadosController.obtenerTodos)
-
-// Muestra los empleados activos
 router.get('/activos', nivelAcceso('administrador'), empleadosController.listarActivos)
-
-// Muestra el técnico con más incidencias asignadas
 router.get('/tecnico-top', nivelAcceso('administrador'), empleadosController.tecnicoConMasIncidencias)
-
-// Muestra el número total de empleados por departamento
 router.get('/contar/departamento', nivelAcceso('administrador'), empleadosController.contarPorDepartamento)
-
-// Muestra el número total de empleados por estado
 router.get('/contar/estado', nivelAcceso('administrador'), empleadosController.contarPorEstado)
-
-// Muestra los empleados filtrados por departamento
 router.get('/departamento/:departamento', nivelAcceso('administrador'), empleadosController.listarPorDepartamento)
-
-// Muestra los empleados filtrados por nivel de acceso
 router.get('/nivel/:nivel', nivelAcceso('administrador'), empleadosController.listarPorNivel)
-
-// Muestra un empleado específico por su correo
 router.get('/correo/:correo', nivelAcceso('administrador'), empleadosController.obtenerPorCorreo)
-
-
-// Estas al final por tema de supabase y el buscar por id
-// Muestra las incidencias creadas por un empleado específico
 router.get('/:id/incidencias-creadas', nivelAcceso('administrador'), empleadosController.listarConIncidenciasCreadas)
-
-// Muestra las incidencias asignadas a un empleado específico
 router.get('/:id/incidencias-asignadas', nivelAcceso('administrador'), empleadosController.listarConIncidenciasAsignadas)
-
-// Registra un nuevo empleado
 router.post('/', nivelAcceso('administrador'), empleadosController.registrar)
-
-// Da de baja a un empleado
 router.patch('/:id/baja', nivelAcceso('administrador'), empleadosController.darDeBaja)
 
-// Para que un técnico pueda mirar su propio perfil, pero no el de otros
+// Rutas accesibles para administrador y técnico
+// Un técnico puede ver su propio perfil pero no el de otros (validado en el controller)
 router.get('/:id', nivelAcceso('administrador', 'técnico'), empleadosController.buscarPorId)
-
-// Cambio de contraseña
+// Un técnico solo puede cambiar su propia contraseña y debe verificar la actual (validado en el controller)
 router.patch('/:id/password', nivelAcceso('administrador', 'técnico'), empleadosController.cambiarPassword)
-
-// Actualiza los datos de un empleado
+// Un técnico puede actualizar sus propios datos no restringidos (validado en el controller)
 router.put('/:id', nivelAcceso('administrador', 'técnico'), empleadosController.actualizar)
 
 export default router

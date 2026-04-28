@@ -1,8 +1,19 @@
+/*
+  Middlewares de autenticación y autorización.
+  Protegen las rutas verificando el JWT almacenado en la cookie httpOnly
+  y comprobando el nivel de acceso del empleado.
+ 
+  Equivalencias con el sistema de sesiones PHP anterior:
+  - verificarToken -> comprobación de $_SESSION['usuario_id']
+  - nivelAcceso    -> comprobación de $nivel_requerido
+ */
+
 import jwt from 'jsonwebtoken'
 
-// Equivalente a comprobar $_SESSION['usuario_id'] en PHP
+// Verifica que la petición incluye un JWT válido y no expirado
+// Si es válido, adjunta los datos del empleado a req.empleado
+// para que estén disponibles en todos los controllers posteriores
 const verificarToken = (req, res, next) => {
-  // Busca el token en la cookie httpOnly
   const token = req.cookies?.token
 
   if (!token) {
@@ -10,18 +21,20 @@ const verificarToken = (req, res, next) => {
   }
 
   try {
-    // Verifica que el token sea válido y no haya expirado
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    req.empleado = decoded // disponible en todos los controllers como req.empleado
+    req.empleado = decoded
     next()
   } catch (err) {
-    // El token ha expirado o es inválido
+    // Si el token ha expirado o es inválido, limpiamos la cookie y rechazamos la petición
     res.clearCookie('token')
     return res.status(401).json({ error: 'Sesión expirada, vuelve a iniciar sesión' })
   }
 }
 
-// Equivalente a comprobar $nivel_requerido
+// Factory que genera un middleware de control de acceso por rol
+// Acepta uno o varios niveles permitidos y devuelve 403 si el empleado
+// no tiene ninguno de ellos
+// Uso: nivelAcceso('administrador') o nivelAcceso('administrador', 'técnico')
 const nivelAcceso = (...nivelesPermitidos) => {
   return (req, res, next) => {
     if (!nivelesPermitidos.includes(req.empleado.nivel_acceso)) {

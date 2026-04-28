@@ -237,7 +237,7 @@ onMounted(cargar)
               </select>
             </div>
 
-            <!-- Fechas de alta y baja — solo lectura, gestionadas por el sistema -->
+            <!-- Fechas de alta y baja - solo lectura, gestionadas por el sistema -->
             <div class="col-md-4">
               <label class="form-label text-muted small">Fecha de alta</label>
               <p class="mb-0">{{ new Date(cliente.fecha_alta).toLocaleDateString('es-ES') }}</p>

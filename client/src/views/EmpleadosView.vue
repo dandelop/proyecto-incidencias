@@ -1,7 +1,7 @@
 <!--
   Vista principal del módulo de empleados. Solo accesible para administradores
   Muestra el listado completo con búsqueda, filtros y paginación en el cliente
-  El empleado logueado no aparece en el listado — debe gestionarse desde su perfil
+  El empleado logueado no aparece en el listado - debe gestionarse desde su perfil
   Cada fila es clicable y navega al detalle del empleado
 -->
 

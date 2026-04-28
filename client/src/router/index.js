@@ -19,7 +19,7 @@ const router = createRouter({
     // Redirige la raíz al login por defecto
     { path: '/', redirect: '/login' },
 
-    // Página de login — única ruta pública
+    // Página de login - única ruta pública
     {
       path: '/login',
       name: 'login',
@@ -68,7 +68,7 @@ const router = createRouter({
       component: () => import('../views/EquiposView.vue')
     },
 
-    // Perfil del empleado logueado — accesible para todos los roles
+    // Perfil del empleado logueado - accesible para todos los roles
     {
       path: '/perfil',
       name: 'perfil',
@@ -76,7 +76,7 @@ const router = createRouter({
       component: () => import('../views/PerfilView.vue')
     },
 
-    // Gestión de empleados — solo administradores
+    // Gestión de empleados - solo administradores
     {
       path: '/empleados',
       name: 'empleados',
@@ -96,7 +96,7 @@ const router = createRouter({
       component: () => import('../views/EmpleadoDetalleView.vue')
     },
 
-    // Auditoría y estadísticas — solo administradores
+    // Auditoría y estadísticas - solo administradores
     {
       path: '/logs',
       name: 'logs',
@@ -116,7 +116,7 @@ const router = createRouter({
   ],
 })
 
-// Navigation guard — se ejecuta antes de cada cambio de ruta
+// Navigation guard - se ejecuta antes de cada cambio de ruta
 router.beforeEach(async (to, from) => {
 
   // Limpia backdrops huérfanos de Bootstrap que puedan quedar al navegar

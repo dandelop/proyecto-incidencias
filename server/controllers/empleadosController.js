@@ -1,3 +1,9 @@
+/*
+  Controlador para la gestión de empleados.
+  Incluye lógica de control de acceso por rol (administrador/técnico),
+  hasheo de contraseñas, notificaciones por email y registro de auditoría.
+ */
+
 import empleadosDao from '../dao/empleadosDao.js'
 import bcrypt from 'bcryptjs'
 import supabase from '../config/supabase.js'
@@ -6,6 +12,7 @@ import registrarLog from '../middlewares/registroSeguridad.js'
 
 const empleadosController = {
 
+  // Devuelve el listado completo de empleados ordenado alfabéticamente
   async obtenerTodos(req, res) {
     try {
       const empleados = await empleadosDao.obtenerTodos()
@@ -15,6 +22,7 @@ const empleadosController = {
     }
   },
 
+  // Busca un empleado por su correo electrónico
   async obtenerPorCorreo(req, res) {
     try {
       const { correo } = req.params
@@ -26,25 +34,24 @@ const empleadosController = {
     }
   },
 
+  // Registra un nuevo empleado.
+  // La contraseña se hashea con bcrypt antes de almacenarse - nunca se guarda en texto plano.
   async registrar(req, res) {
     try {
       const empleado = req.body
-
       const password_hash = await bcrypt.hash(empleado.password_hash, 10)
-
       const nuevo = await empleadosDao.registrar({
         ...empleado,
         password_hash
       })
-
       await registrarLog(req.empleado.id, 'EMPLEADO_CREADO', `Empleado ${nuevo.nombre} ${nuevo.apellido1} creado`, req)
-
       res.status(201).json(nuevo)
     } catch (error) {
       res.status(500).json({ error: error.message })
     }
   },
 
+  // Baja lógica del empleado (cambia su estado a 'baja')
   async darDeBaja(req, res) {
     try {
       const { id } = req.params
@@ -55,6 +62,7 @@ const empleadosController = {
     }
   },
 
+  // Devuelve solo los empleados con estado 'activo'
   async listarActivos(req, res) {
     try {
       const empleados = await empleadosDao.listarActivos()
@@ -64,6 +72,7 @@ const empleadosController = {
     }
   },
 
+  // Filtra empleados por departamento
   async listarPorDepartamento(req, res) {
     try {
       const { departamento } = req.params
@@ -74,6 +83,7 @@ const empleadosController = {
     }
   },
 
+  // Filtra empleados por nivel de acceso (administrador/técnico)
   async listarPorNivel(req, res) {
     try {
       const { nivel } = req.params
@@ -84,6 +94,7 @@ const empleadosController = {
     }
   },
 
+  // Devuelve un empleado junto con las incidencias que ha creado
   async listarConIncidenciasCreadas(req, res) {
     try {
       const { id } = req.params
@@ -95,6 +106,7 @@ const empleadosController = {
     }
   },
 
+  // Devuelve un empleado junto con las incidencias que tiene asignadas
   async listarConIncidenciasAsignadas(req, res) {
     try {
       const { id } = req.params
@@ -106,6 +118,7 @@ const empleadosController = {
     }
   },
 
+  // Devuelve el técnico con mayor número de incidencias asignadas
   async tecnicoConMasIncidencias(req, res) {
     try {
       const empleado = await empleadosDao.tecnicoConMasIncidencias()
@@ -115,6 +128,7 @@ const empleadosController = {
     }
   },
 
+  // Devuelve un objeto con el recuento de empleados agrupado por departamento
   async contarPorDepartamento(req, res) {
     try {
       const conteo = await empleadosDao.contarPorDepartamento()
@@ -124,6 +138,7 @@ const empleadosController = {
     }
   },
 
+  // Devuelve un objeto con el recuento de empleados agrupado por estado laboral
   async contarPorEstado(req, res) {
     try {
       const conteo = await empleadosDao.contarPorEstado()
@@ -133,6 +148,8 @@ const empleadosController = {
     }
   },
 
+  // Busca un empleado por su ID.
+  // Control de acceso: un técnico solo puede ver su propio perfil.
   async buscarPorId(req, res) {
     try {
       const { id } = req.params
@@ -152,6 +169,10 @@ const empleadosController = {
     }
   },
 
+  // Cambia la contraseña de un empleado.
+  // Control de acceso: un técnico solo puede cambiar la suya y debe verificar la actual.
+  // Un administrador puede cambiar la de cualquier empleado sin verificación.
+  // Tras el cambio se envía un email de aviso y se registra en el log de auditoría.
   async cambiarPassword(req, res) {
     try {
       const { id } = req.params
@@ -166,12 +187,10 @@ const empleadosController = {
         if (req.empleado.id !== Number(id)) {
           return res.status(403).json({ error: 'No tienes permisos para cambiar la contraseña' })
         }
-
         if (!password_actual) {
           return res.status(400).json({ error: 'La contraseña actual es obligatoria' })
         }
-
-        // Verifica contraseña actual
+        // Verifica que la contraseña actual es correcta antes de permitir el cambio
         const empleado = await empleadosDao.buscarPorId(Number(id))
         const passwordValida = await bcrypt.compare(password_actual, empleado.password_hash)
         if (!passwordValida) {
@@ -179,7 +198,7 @@ const empleadosController = {
         }
       }
 
-      // Hashea la nueva
+      // Hashea la nueva contraseña antes de almacenarla
       const password_hash = await bcrypt.hash(password_nueva, 10)
       await empleadosDao.cambiarPassword(Number(id), password_hash)
 
@@ -196,19 +215,23 @@ const empleadosController = {
     }
   },
 
+  // Actualiza los datos de un empleado.
+  // Si el nuevo estado implica no disponibilidad (baja, desvinculado, vacaciones),
+  // desasigna automáticamente sus incidencias activas para que puedan ser reasignadas.
+  // Devuelve el número de incidencias desasignadas para informar al frontend.
   async actualizar(req, res) {
     try {
       const { id } = req.params
       const empleado = req.body
 
-      // busca las incidencias del empleado
+      // Busca las incidencias activas asignadas al empleado
       const { data: incidenciasAfectadas } = await supabase
         .from('incidencias')
         .select('id')
         .eq('id_tecnico_asignado', Number(id))
         .not('estado', 'in', '("entregado","cancelado")')
 
-      // Si el empleado no va a estar disponible, se le quitan las incidencias
+      // Si el empleado no va a estar disponible, se le quitan las incidencias asignadas
       if (['baja', 'desvinculado', 'vacaciones'].includes(empleado.estado)) {
         await supabase
           .from('incidencias')
@@ -216,10 +239,9 @@ const empleadosController = {
           .eq('id_tecnico_asignado', Number(id))
           .not('estado', 'in', '("entregado","cancelado")')
       }
+
       const actualizado = await empleadosDao.actualizar(Number(id), empleado)
-
       await registrarLog(req.empleado.id, 'EMPLEADO_MODIFICADO', `Empleado id:${id} modificado`, req)
-
       res.json({ empleado: actualizado, incidenciasDesasignadas: incidenciasAfectadas.length })
 
     } catch (error) {

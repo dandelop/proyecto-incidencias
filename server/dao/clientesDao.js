@@ -1,7 +1,15 @@
+/*
+  Capa de acceso a datos para la gestión de clientes
+  Centraliza todas las consultas a Supabase relacionadas con la tabla 'clientes'
+  Las consultas avanzadas incluyen joins con la tabla 'incidencias' usando
+  las foreign keys definidas en Supabase
+ */
+
 import supabase from '../config/supabase.js'
 
 const clientesDao = {
 
+  // Devuelve todos los clientes ordenados alfabéticamente por apellido y nombre
   async listarTodos() {
     const { data, error } = await supabase
       .from('clientes')
@@ -12,6 +20,7 @@ const clientesDao = {
     return data
   },
 
+  // Busca un cliente por su ID
   async buscarPorId(id) {
     const { data, error } = await supabase
       .from('clientes')
@@ -22,6 +31,7 @@ const clientesDao = {
     return data
   },
 
+  // Inserta un nuevo cliente en la base de datos
   async insertar(cliente) {
     const { data, error } = await supabase
       .from('clientes')
@@ -31,6 +41,7 @@ const clientesDao = {
     return data[0]
   },
 
+  // Actualiza los datos de un cliente existente
   async actualizar(id, cliente) {
     const { data, error } = await supabase
       .from('clientes')
@@ -41,6 +52,7 @@ const clientesDao = {
     return data[0]
   },
 
+  // Baja lógica: marca el cliente como inactivo y registra la fecha de baja
   async darDeBaja(id) {
     const { data, error } = await supabase
       .from('clientes')
@@ -54,6 +66,7 @@ const clientesDao = {
     return data[0]
   },
 
+  // Eliminación física del cliente de la base de datos
   async eliminar(id) {
     const { error } = await supabase
       .from('clientes')
@@ -63,6 +76,7 @@ const clientesDao = {
     return true
   },
 
+  // Devuelve el total de clientes usando count optimizado (sin traer filas)
   async contar() {
     const { count, error } = await supabase
       .from('clientes')
@@ -73,6 +87,7 @@ const clientesDao = {
 
   // Consultas avanzadas
 
+  // Filtra clientes por tipo (particular, autónomo, empresa)
   async listarPorTipo(tipo) {
     const { data, error } = await supabase
       .from('clientes')
@@ -82,6 +97,7 @@ const clientesDao = {
     return data
   },
 
+  // Devuelve solo los clientes activos, ordenados por fecha de alta descendente
   async listarActivos() {
     const { data, error } = await supabase
       .from('clientes')
@@ -92,6 +108,7 @@ const clientesDao = {
     return data
   },
 
+  // Devuelve los clientes dados de baja, ordenados por fecha de baja descendente
   async listarBajas() {
     const { data, error } = await supabase
       .from('clientes')
@@ -102,6 +119,7 @@ const clientesDao = {
     return data
   },
 
+  // Devuelve todos los clientes con sus incidencias asociadas
   async listarConIncidencias() {
     const { data, error } = await supabase
       .from('clientes')
@@ -114,6 +132,8 @@ const clientesDao = {
     return data
   },
 
+  // Devuelve clientes que tienen al menos una incidencia activa
+  // Usa !inner para comportarse como un INNER JOIN - excluye clientes sin incidencias activas
   async listarConIncidenciasActivas() {
     const { data, error } = await supabase
       .from('clientes')
@@ -126,6 +146,8 @@ const clientesDao = {
     return data
   },
 
+  // Devuelve clientes activos sin ninguna incidencia registrada
+  // El filtrado se hace en JavaScript ya que Supabase no soporta IS EMPTY directamente
   async listarSinIncidencias() {
     const { data, error } = await supabase
       .from('clientes')
@@ -138,6 +160,8 @@ const clientesDao = {
     return data.filter(cliente => cliente.incidencias.length === 0)
   },
 
+  // Devuelve un objeto con el recuento de clientes agrupado por tipo
+  // El agrupamiento se realiza en JavaScript con reduce
   async contarPorTipo() {
     const { data, error } = await supabase
       .from('clientes')
@@ -149,6 +173,8 @@ const clientesDao = {
     }, {})
   },
 
+  // Devuelve el cliente con mayor número de incidencias registradas
+  // El ordenamiento se realiza en JavaScript tras obtener los datos
   async clienteConMasIncidencias() {
     const { data, error } = await supabase
       .from('clientes')
@@ -165,6 +191,7 @@ const clientesDao = {
       .sort((a, b) => b.total_incidencias - a.total_incidencias)[0]
   },
 
+  // Reactiva un cliente dado de baja: lo marca como activo y limpia su fecha de baja
   async darDeAlta(id) {
     const { data, error } = await supabase
       .from('clientes')

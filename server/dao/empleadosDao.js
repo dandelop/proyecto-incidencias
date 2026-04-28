@@ -1,6 +1,15 @@
+/*
+  Capa de acceso a datos para la gestión de empleados
+  Centraliza todas las consultas a Supabase relacionadas con la tabla 'empleados'
+  Las consultas con incidencias usan aliases explícitos para distinguir entre
+  las dos foreign keys que apuntan a la misma tabla (id_empleado_creador e id_tecnico_asignado)
+ */
+
 import supabase from '../config/supabase.js'
+
 const empleadosDao = {
 
+  // Devuelve todos los empleados ordenados alfabéticamente por apellido y nombre
   async obtenerTodos() {
     const { data, error } = await supabase
       .from('empleados')
@@ -11,6 +20,7 @@ const empleadosDao = {
     return data
   },
 
+  // Busca un empleado por su correo electrónico
   async obtenerPorCorreo(correo) {
     const { data, error } = await supabase
       .from('empleados')
@@ -21,6 +31,8 @@ const empleadosDao = {
     return data
   },
 
+  // Inserta un nuevo empleado en la base de datos
+  // La contraseña llega ya hasheada desde el controller
   async registrar(empleado) {
     const { data, error } = await supabase
       .from('empleados')
@@ -30,6 +42,7 @@ const empleadosDao = {
     return data[0]
   },
 
+  // Baja lógica: cambia el estado del empleado a 'baja'
   async darDeBaja(id) {
     const { data, error } = await supabase
       .from('empleados')
@@ -42,6 +55,7 @@ const empleadosDao = {
 
   // Consultas avanzadas
 
+  // Devuelve solo los empleados con estado 'activo'
   async listarActivos() {
     const { data, error } = await supabase
       .from('empleados')
@@ -51,6 +65,7 @@ const empleadosDao = {
     return data
   },
 
+  // Filtra empleados por departamento (coincidencia exacta)
   async listarPorDepartamento(departamento) {
     const { data, error } = await supabase
       .from('empleados')
@@ -60,6 +75,7 @@ const empleadosDao = {
     return data
   },
 
+  // Filtra empleados por nivel de acceso (administrador/técnico)
   async listarPorNivel(nivel_acceso) {
     const { data, error } = await supabase
       .from('empleados')
@@ -69,6 +85,9 @@ const empleadosDao = {
     return data
   },
 
+  // Devuelve un empleado con las incidencias que ha creado
+  // Usa alias 'incidencias_creadas' para referenciar la FK id_empleado_creador
+  // y distinguirla de la FK id_tecnico_asignado que apunta a la misma tabla
   async listarConIncidenciasCreadas(id) {
     const { data, error } = await supabase
       .from('empleados')
@@ -82,6 +101,8 @@ const empleadosDao = {
     return data
   },
 
+  // Devuelve un empleado con las incidencias que tiene asignadas
+  // Usa alias 'incidencias_asignadas' para referenciar la FK id_tecnico_asignado
   async listarConIncidenciasAsignadas(id) {
     const { data, error } = await supabase
       .from('empleados')
@@ -95,6 +116,8 @@ const empleadosDao = {
     return data
   },
 
+  // Devuelve el empleado con mayor número de incidencias asignadas
+  // El ordenamiento se realiza en JavaScript tras obtener los datos
   async tecnicoConMasIncidencias() {
     const { data, error } = await supabase
       .from('empleados')
@@ -111,6 +134,8 @@ const empleadosDao = {
       .sort((a, b) => b.total_asignadas - a.total_asignadas)[0]
   },
 
+  // Devuelve un objeto con el recuento de empleados agrupado por departamento
+  // El agrupamiento se realiza en JavaScript con reduce
   async contarPorDepartamento() {
     const { data, error } = await supabase
       .from('empleados')
@@ -122,6 +147,8 @@ const empleadosDao = {
     }, {})
   },
 
+  // Devuelve un objeto con el recuento de empleados agrupado por estado laboral
+  // El agrupamiento se realiza en JavaScript con reduce
   async contarPorEstado() {
     const { data, error } = await supabase
       .from('empleados')
@@ -133,6 +160,7 @@ const empleadosDao = {
     }, {})
   },
 
+  // Busca un empleado por su ID
   async buscarPorId(id) {
     const { data, error } = await supabase
       .from('empleados')
@@ -143,6 +171,8 @@ const empleadosDao = {
     return data
   },
 
+  // Actualiza el hash de la contraseña de un empleado
+  // La contraseña llega ya hasheada desde el controller
   async cambiarPassword(id, passwordHash) {
     const { data, error } = await supabase
       .from('empleados')
@@ -153,6 +183,7 @@ const empleadosDao = {
     return data[0]
   },
 
+  // Actualiza los datos de un empleado existente
   async actualizar(id, empleado) {
     const { data, error } = await supabase
       .from('empleados')

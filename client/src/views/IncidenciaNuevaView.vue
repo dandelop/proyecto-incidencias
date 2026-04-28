@@ -117,7 +117,7 @@ const buscarPorSerial = async () => {
     buscandoSerial.value = true
     equipoExistente.value = await equiposService.buscarPorSerial(equipo.value.serial)
   } catch {
-    // 404 significa que no existe — se creará uno nuevo al enviar el formulario
+    // 404 significa que no existe - se creará uno nuevo al enviar el formulario
     equipoExistente.value = null
   } finally {
     buscandoSerial.value = false
@@ -435,7 +435,7 @@ onMounted(async () => {
                 {{ buscandoSerial ? '...' : '🔍' }}
               </button>
             </div>
-            <!-- Aviso de equipo encontrado — se utilizará ese para la incidencia -->
+            <!-- Aviso de equipo encontrado - se utilizará ese para la incidencia -->
             <div v-if="equipoExistente" class="alert alert-info mt-2 py-2 small">
               ✅ Equipo encontrado: <strong>{{ equipoExistente.nombre }}</strong> — se usará este equipo
             </div>

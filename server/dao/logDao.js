@@ -1,17 +1,16 @@
+/*
+  Capa de acceso a datos para el log de auditoría del sistema.
+  Centraliza todas las consultas a Supabase relacionadas con la tabla 'log'.
+  Los registros se crean automáticamente desde registroSeguridad.js
+  y solo se consultan o eliminan desde aquí.
+ */
+
 import supabase from '../config/supabase.js'
 
 const logDao = {
 
-  async buscarPorId(id) {
-    const { data, error } = await supabase
-      .from('empleados')
-      .select('*')
-      .eq('id', id)
-      .single()
-    if (error) throw error
-    return data
-  },
-
+  // Devuelve el historial completo de logs ordenado por fecha descendente,
+  // incluyendo los datos básicos del empleado que realizó cada acción
   async listarTodos() {
     const { data, error } = await supabase
       .from('log')
@@ -24,6 +23,7 @@ const logDao = {
     return data
   },
 
+  // Filtra el log por empleado - útil para auditar las acciones de un usuario concreto
   async listarPorEmpleado(usuario_id) {
     const { data, error } = await supabase
       .from('log')
@@ -34,6 +34,8 @@ const logDao = {
     return data
   },
 
+  // Filtra el log por tipo de acción (LOGIN_EXITOSO, CLIENTE_CREADO, etc.)
+  // incluyendo los datos del empleado que realizó la acción
   async listarPorAccion(accion) {
     const { data, error } = await supabase
       .from('log')
@@ -47,11 +49,11 @@ const logDao = {
     return data
   },
 
+  // Elimina los registros de log con más de 90 días de antigüedad
+  // Permite mantener la tabla en un tamaño manejable sin perder historial reciente
   async eliminarAntiguos() {
-    // Borra logs de más de 90 días, equivale a tu limpiarLogsAntiguos() de PHP
     const fechaLimite = new Date()
     fechaLimite.setDate(fechaLimite.getDate() - 90)
-
     const { error } = await supabase
       .from('log')
       .delete()

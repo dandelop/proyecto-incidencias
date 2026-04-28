@@ -1,5 +1,5 @@
 /*
-  Punto de entrada de la aplicación Vue.
+  Punto de entrada de la aplicación Vue
 
   - Crea la instancia de la aplicación Vue
   - Registra el enrutador (Vue Router)

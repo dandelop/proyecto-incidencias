@@ -186,7 +186,7 @@ onMounted(async () => {
         <div class="card-body">
           <div class="row g-3">
 
-            <!-- Datos personales — editables por admin y por el propio empleado -->
+            <!-- Datos personales - editables por admin y por el propio empleado -->
             <div class="col-md-4">
               <label class="form-label text-muted small">Nombre</label>
               <p v-if="!modoEdicion" class="mb-0 form-control-plaintext py-1">{{ empleado.nombre }}</p>
@@ -236,7 +236,7 @@ onMounted(async () => {
               <input v-else v-model="empleadoEditado.direccion" class="form-control" />
             </div>
 
-            <!-- Datos laborales — solo visibles y editables por el administrador -->
+            <!-- Datos laborales - solo visibles y editables por el administrador -->
             <div class="col-md-4" v-if="esAdmin">
               <label class="form-label text-muted small">Puesto</label>
               <p v-if="!modoEdicion" class="mb-0 form-control-plaintext py-1">{{ empleado.puesto ?? '—' }}</p>
@@ -252,7 +252,7 @@ onMounted(async () => {
             <div class="col-md-4" v-if="esAdmin">
               <label class="form-label text-muted small">Nivel de acceso</label>
               <p v-if="!modoEdicion" class="mb-0 form-control-plaintext py-1 text-capitalize">{{ empleado.nivel_acceso
-              }}</p>
+                }}</p>
               <select v-else v-model="empleadoEditado.nivel_acceso" class="form-select">
                 <option value="técnico">Técnico</option>
                 <option value="administrador">Administrador</option>
@@ -270,7 +270,7 @@ onMounted(async () => {
               </select>
             </div>
 
-            <!-- Fecha de contratación — solo lectura -->
+            <!-- Fecha de contratación - solo lectura -->
             <div class="col-md-4">
               <label class="form-label text-muted small">Fecha de contratación</label>
               <p class="mb-0 form-control-plaintext py-1">{{ empleado.fecha_contratacion ? new
@@ -281,7 +281,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- Cambio de contraseña — accesible para admin y para el propio empleado -->
+      <!-- Cambio de contraseña - accesible para admin y para el propio empleado -->
       <div class="card mb-4" v-if="esAdmin || esPropioPerfil">
         <div class="card-header fw-bold">Cambiar contraseña</div>
         <div class="card-body">
@@ -319,7 +319,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Incidencias asignadas al empleado — se cargan al montar y tras guardar cambios -->
+    <!-- Incidencias asignadas al empleado - se cargan al montar y tras guardar cambios -->
     <div class="mt-2">
       <h5>Incidencias asignadas</h5>
       <div v-if="cargandoIncidencias" class="text-center">

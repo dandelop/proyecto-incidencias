@@ -34,7 +34,7 @@ const logout = async () => {
         <span class="ms-1">Gestor de Incidencias</span>
       </a>
 
-      <!-- Botón hamburguesa — visible solo en pantallas pequeñas -->
+      <!-- Botón hamburguesa - visible solo en pantallas pequeñas -->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>

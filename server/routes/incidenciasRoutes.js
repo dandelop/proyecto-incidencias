@@ -1,44 +1,37 @@
+/*
+  Define las rutas de la API para la gestión de incidencias (reparaciones)
+  Todas las rutas requieren autenticación (aplicada globalmente en routes/index.js)
+  La mayoría de operaciones son accesibles para administrador y técnico,
+  reservando solo la eliminación al administrador
+ 
+  Importante: las rutas específicas van antes que las rutas con parámetros (:id)
+  para evitar que Express interprete palabras clave como IDs
+ */
+
 import { Router } from 'express'
 import incidenciasController from '../controllers/incidenciasController.js'
 import { nivelAcceso } from '../middlewares/autenticacion.js'
 
 const router = Router()
 
-// Muestra todas las incidencias
+// Rutas accesibles para administrador y técnico
 router.get('/', nivelAcceso('administrador', 'técnico'), incidenciasController.listarTodas)
-
-// Muestra el número total de incidencias registradas
 router.get('/contar', nivelAcceso('administrador', 'técnico'), incidenciasController.contar)
-
-// Muestra las incidencias junto con los nombres del cliente, empleado y equipo relacionados
+// Devuelve incidencias con datos completos de cliente, equipo y empleados asociados
 router.get('/detalles', nivelAcceso('administrador', 'técnico'), incidenciasController.listarConDetalles)
-
-// Muestra solo las incidencias que están actualmente abiertas
 router.get('/activas', nivelAcceso('administrador', 'técnico'), incidenciasController.listarActivas)
-
-// Muestra las incidencias filtradas por estado (abierta, en progreso, cerrada)
 router.get('/estado/:estado', nivelAcceso('administrador', 'técnico'), incidenciasController.listarPorEstado)
-
-// Muestra las incidencias asignadas a un empleado específico
+// Filtra por empleado asignado - usado por técnicos para ver sus propias incidencias
 router.get('/asignado/:id', nivelAcceso('administrador', 'técnico'), incidenciasController.listarPorAsignado)
-
-// Muestra las incidencias reportadas por un cliente específico
 router.get('/cliente/:id', nivelAcceso('administrador', 'técnico'), incidenciasController.listarPorCliente)
-
-// Muestra las incidencias relacionadas con un tipo específico de equipo
 router.get('/equipo/tipo/:tipo', nivelAcceso('administrador', 'técnico'), incidenciasController.listarPorTipoEquipo)
-
-// Estas al final por tema de supabase y el buscar por id
-// Muestra los detalles de una incidencia específica por su ID
-router.get('/:id', nivelAcceso('administrador', 'técnico'), incidenciasController.buscarPorId)
-
-// Crea una nueva incidencia
 router.post('/', nivelAcceso('administrador', 'técnico'), incidenciasController.insertar)
-
-// Modifica una incidencia existente por su ID
 router.put('/:id', nivelAcceso('administrador', 'técnico'), incidenciasController.modificar)
 
-// Elimina una incidencia por su ID
+// Rutas exclusivas para administrador
 router.delete('/:id', nivelAcceso('administrador'), incidenciasController.eliminar)
+
+// Rutas con parámetro :id - siempre al final para evitar conflictos
+router.get('/:id', nivelAcceso('administrador', 'técnico'), incidenciasController.buscarPorId)
 
 export default router

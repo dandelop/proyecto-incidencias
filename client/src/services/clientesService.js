@@ -38,7 +38,7 @@ const clientesService = {
     return res.data
   },
 
-  // Baja lógica — marca al cliente como inactivo y registra la fecha de baja
+  // Baja lógica - marca al cliente como inactivo y registra la fecha de baja
   // Cancela automáticamente sus incidencias activas (gestionado en el backend)
   async darDeBaja(id) {
     const res = await api.patch(`/clientes/${id}/baja`)
@@ -51,7 +51,7 @@ const clientesService = {
     return res.data
   },
 
-  // Eliminación física — acción irreversible, solo permitida sin incidencias activas
+  // Eliminación física - acción irreversible, solo permitida sin incidencias activas
   async eliminar(id) {
     const res = await api.delete(`/clientes/${id}`)
     return res.data

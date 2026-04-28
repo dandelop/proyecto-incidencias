@@ -1,8 +1,7 @@
 <!--
-  EmpleadoNuevoView.vue
-  Formulario de alta de un nuevo empleado. Solo accesible para administradores.
-  Tras la creación exitosa, redirige al detalle del empleado recién creado.
-  La contraseña se envía en texto plano y el backend se encarga de hashearla.
+  Formulario de alta de un nuevo empleado. Solo accesible para administradores
+  Tras la creación exitosa, redirige al detalle del empleado recién creado
+  La contraseña se envía en texto plano y el backend se encarga de hashearla
 -->
 
 <script setup>

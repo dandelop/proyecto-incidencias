@@ -25,7 +25,7 @@ import * as bootstrap from 'bootstrap'
 import { authStore } from '../store/auth.js'
 import { normalizar } from '../utils/texto.js'
 
-// Estado principal
+// Estado
 const incidencias = ref([])
 const error = ref(null)
 const cargando = ref(false)

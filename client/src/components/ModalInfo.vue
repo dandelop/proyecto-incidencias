@@ -1,7 +1,7 @@
 <!--
   Componente reutilizable para mostrar mensajes informativos al usuario
   A diferencia de ModalConfirmacion.vue, este modal solo tiene un botón de cierre
-  y no emite ningún evento — se usa para notificar, no para confirmar acciones
+  y no emite ningún evento - se usa para notificar, no para confirmar acciones
 
   Props:
     - id: identificador único del modal (requerido por Bootstrap para el data-bs-target)

@@ -236,7 +236,7 @@ onMounted(async () => {
             </div>
 
             <hr>
-            <!-- Historial de incidencias — permite ver si el equipo ya ha entrado antes -->
+            <!-- Historial de incidencias - permite ver si el equipo ya ha entrado antes -->
             <h6>Historial de incidencias</h6>
             <div v-if="cargandoHistorial" class="text-center">
               <div class="spinner-border spinner-border-sm text-primary"></div>

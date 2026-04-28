@@ -1,15 +1,15 @@
 <!--
-  Componente raíz de la aplicación.
+  Componente raíz de la aplicación
 
-  - Verifica la sesión activa al arrancar llamando a /autenticacion/me.
+  - Verifica la sesión activa al arrancar llamando a /autenticacion/me
     Si la cookie JWT sigue siendo válida, restaura el estado global sin
-    necesidad de volver a iniciar sesión.
+    necesidad de volver a iniciar sesión
 
   - Muestra un spinner mientras se comprueba la sesión, evitando que el
     navigation guard evalúe el acceso a rutas con un estado aún indeterminado.
 
   - Renderiza el layout completo (NavBar + vista + Footer) o solo la vista
-    en el caso del login.
+    en el caso del login
 -->
 
 <script setup>
@@ -26,8 +26,8 @@ const route = useRoute()
 // El layout (NavBar y Footer) solo se muestra en rutas que no sean el login
 const mostrarLayout = computed(() => route.name !== 'login')
 
-// Al montar la app, comprueba si hay una sesión activa en el servidor.
-// Esto permite restaurar la sesión al recargar la página sin pasar por el login.
+// Al montar la app, comprueba si hay una sesión activa en el servidor
+// Esto permite restaurar la sesión al recargar la página sin pasar por el login
 onMounted(async () => {
   try {
     const res = await api.get('/autenticacion/me')

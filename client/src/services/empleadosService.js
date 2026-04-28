@@ -27,13 +27,13 @@ const empleadosService = {
     return res.data
   },
 
-  // Crea un nuevo empleado — la contraseña se hashea en el backend
+  // Crea un nuevo empleado - la contraseña se hashea en el backend
   async registrar(empleado) {
     const res = await api.post('/empleados', empleado)
     return res.data
   },
 
-  // Baja lógica — cambia el estado del empleado a 'baja'
+  // Baja lógica - cambia el estado del empleado a 'baja'
   // y desasigna sus incidencias activas en el backend
   async darDeBaja(id) {
     const res = await api.patch(`/empleados/${id}/baja`)
