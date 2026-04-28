@@ -169,9 +169,7 @@ onMounted(async () => {
   <div>
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>Incidencias</h2>
-      <RouterLink to="/incidencias/nueva" class="btn btn-primary">
-        Nueva incidencia
-      </RouterLink>
+      <span class="text-muted small">{{ incidenciasFiltradas.length }} incidencias encontradas</span>
     </div>
 
     <!-- FILTROS Y BUSCADOR-->
@@ -204,8 +202,15 @@ onMounted(async () => {
 
       <!-- Ordenación por fecha -->
       <div class="col-md-1">
-        <button class="btn btn-outline-secondary w-100" @click="ordenReciente = !ordenReciente">
+        <button class="btn btn-outline-dark w-100" @click="ordenReciente = !ordenReciente">
           {{ ordenReciente ? '↓ Más recientes' : '↑ Más antiguas' }}
+        </button>
+      </div>
+
+      <!-- Eliminar filtros aplicados -->
+      <div class="col-md-1">
+        <button class="btn btn-outline-dark w-100" @click="busqueda = ''; filtroEstado = ''; filtroPrioridad = ''">
+          Limpiar
         </button>
       </div>
 
@@ -217,10 +222,11 @@ onMounted(async () => {
         </button>
       </div>
 
-      <div class="col-md-1">
-        <button class="btn btn-outline-secondary w-100" @click="busqueda = ''; filtroEstado = ''; filtroPrioridad = ''">
-          Limpiar
-        </button>
+      <!-- Botón Nueva Incidencia -->
+      <div class="col-md-2 d-flex justify-content-end">
+        <RouterLink to="/incidencias/nueva" class="btn btn-primary w-100">
+          Nueva incidencia
+        </RouterLink>
       </div>
     </div>
 

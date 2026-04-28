@@ -80,11 +80,9 @@ onMounted(cargar)
 
 <template>
   <div>
-
-    <!-- Encabezado con título y botón para crear nuevo empleado -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>Empleados</h2>
-      <RouterLink to="/empleados/nuevo" class="btn btn-primary">Nuevo empleado</RouterLink>
+      <span class="text-muted small">{{ empleadosFiltrados.length }} empleados encontrados</span>
     </div>
 
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
@@ -105,7 +103,7 @@ onMounted(cargar)
       </div>
 
       <!-- Filtro de departamento con búsqueda parcial -->
-      <div class="col-md-3">
+      <div class="col-md-2">
         <input v-model="filtroDepartamento" type="text" class="form-control"
           placeholder="Filtrar por departamento..." />
       </div>
@@ -122,11 +120,15 @@ onMounted(cargar)
       </div>
 
       <!-- Botón para limpiar todos los filtros -->
-      <div class="col-md-2">
-        <button class="btn btn-outline-secondary w-100"
+      <div class="col-md-1">
+        <button class="btn btn-outline-dark w-100"
           @click="busqueda = ''; filtroNivel = ''; filtroDepartamento = ''; filtroEstado = ''">
           Limpiar
         </button>
+      </div>
+
+      <div class="col-md-2">
+        <RouterLink to="/empleados/nuevo" class="btn btn-primary w-100">Nuevo empleado</RouterLink>
       </div>
     </div>
 
@@ -172,8 +174,6 @@ onMounted(cargar)
           </div>
         </div>
       </div>
-
-      <p class="text-muted small">{{ empleadosFiltrados.length }} empleados encontrados</p>
 
       <!-- Paginación -->
       <div class="d-flex justify-content-center mt-4" v-if="totalPaginas > 1">

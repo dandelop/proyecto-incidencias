@@ -109,18 +109,18 @@ onMounted(cargar)
 
     <!-- FILTROS -->
     <div class="row g-3 mb-4">
-      <div class="col-md-5">
+      <div class="col-md-4">
         <input v-model="busqueda" type="text" class="form-control"
           placeholder="Buscar por detalles, empleado o IP..." />
       </div>
-      <div class="col-md-5">
+      <div class="col-md-3">
         <select v-model="filtroAccion" class="form-select">
           <option value="">Todas las acciones</option>
           <option v-for="accion in acciones" :key="accion" :value="accion">{{ accion }}</option>
         </select>
       </div>
-      <div class="col-md-2">
-        <button class="btn btn-outline-secondary w-100" @click="busqueda = ''; filtroAccion = ''">
+      <div class="col-md-1">
+        <button class="btn btn-outline-dark w-100" @click="busqueda = ''; filtroAccion = ''">
           Limpiar
         </button>
       </div>

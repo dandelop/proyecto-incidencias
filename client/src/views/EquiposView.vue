@@ -50,7 +50,7 @@ const tiposBadge = {
   tablet: 'warning',
   consola: 'danger',
   periférico: 'dark',
-  otro: 'light'
+  otro: 'success'
 }
 
 // Carga el listado completo de equipos filtrado en el cliente
@@ -124,17 +124,18 @@ onMounted(async () => {
   <div>
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>Equipos</h2>
+      <span class="text-muted small">{{ equiposFiltrados.length }} equipos encontrados</span>
     </div>
 
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
 
     <!-- Filtros -->
     <div class="row g-3 mb-4">
-      <div class="col-md-5">
+      <div class="col-md-4">
         <input v-model="busqueda" type="text" class="form-control"
           placeholder="Buscar por nombre, marca, modelo o serial..." />
       </div>
-      <div class="col-md-4">
+      <div class="col-md-2">
         <select v-model="filtroTipo" class="form-select">
           <option value="">Todos los tipos</option>
           <option value="smartphone">Smartphone</option>
@@ -146,8 +147,8 @@ onMounted(async () => {
           <option value="otro">Otro</option>
         </select>
       </div>
-      <div class="col-md-3">
-        <button class="btn btn-outline-secondary w-100" @click="busqueda = ''; filtroTipo = ''">
+      <div class="col-md-1">
+        <button class="btn btn-outline-dark w-100" @click="busqueda = ''; filtroTipo = ''">
           Limpiar
         </button>
       </div>
@@ -159,7 +160,7 @@ onMounted(async () => {
     </div>
 
     <div v-else>
-      <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+      <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4">
         <div v-for="e in equiposPaginados" :key="e.id" class="col">
           <div class="card h-100 shadow-sm" style="cursor: pointer" @click="abrirDetalle(e)">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -180,8 +181,6 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-
-      <p class="text-muted small mt-3">{{ equiposFiltrados.length }} equipos encontrados</p>
 
       <!-- Paginación -->
       <div class="d-flex justify-content-center mt-4" v-if="totalPaginas > 1">

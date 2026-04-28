@@ -77,7 +77,7 @@ onMounted(cargar)
   <div>
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>Clientes</h2>
-      <RouterLink to="/clientes/nuevo" class="btn btn-primary">Nuevo cliente</RouterLink>
+      <span class="text-muted small">{{ clientesFiltrados.length }} clientes encontrados</span>
     </div>
 
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
@@ -96,17 +96,20 @@ onMounted(cargar)
           <option value="empresa">Empresa</option>
         </select>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <select v-model="filtroActivo" class="form-select">
           <option value="">Todos</option>
           <option value="true">Activos</option>
           <option value="false">Bajas</option>
         </select>
       </div>
-      <div class="col-md-2">
-        <button class="btn btn-outline-secondary w-100" @click="busqueda = ''; filtroTipo = ''; filtroActivo = ''">
+      <div class="col-md-1">
+        <button class="btn btn-outline-dark w-100" @click="busqueda = ''; filtroTipo = ''; filtroActivo = ''">
           Limpiar
         </button>
+      </div>
+      <div class="col-md-2">
+        <RouterLink to="/clientes/nuevo" class="btn btn-primary w-100">Nuevo cliente</RouterLink>
       </div>
     </div>
 
@@ -150,8 +153,6 @@ onMounted(cargar)
           </div>
         </div>
       </div>
-
-      <p class="text-muted small">{{ clientesFiltrados.length }} clientes encontrados</p>
 
       <!-- Paginación -->
       <div class="d-flex justify-content-center mt-4" v-if="totalPaginas > 1">

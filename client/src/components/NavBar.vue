@@ -42,28 +42,28 @@ const logout = async () => {
       <div class="collapse navbar-collapse" id="navbarNav">
 
         <!-- Enlaces accesibles para todos los usuarios autenticados -->
-        <ul class="navbar-nav me-auto">
+        <ul class="navbar-nav me-auto ms-3">
           <li class="nav-item">
-            <RouterLink class="nav-link" to="/incidencias">Incidencias</RouterLink>
+            <RouterLink class="nav-link text-light" to="/incidencias">Incidencias</RouterLink>
           </li>
           <li class="nav-item">
-            <RouterLink class="nav-link" to="/clientes">Clientes</RouterLink>
+            <RouterLink class="nav-link text-light" to="/clientes">Clientes</RouterLink>
           </li>
           <li class="nav-item">
-            <RouterLink class="nav-link" to="/equipos">Equipos</RouterLink>
+            <RouterLink class="nav-link text-light" to="/equipos">Equipos</RouterLink>
           </li>
 
           <!-- Enlaces exclusivos para administradores -->
           <li class="nav-item" v-if="authStore.empleado?.nivel_acceso === 'administrador'">
-            <RouterLink class="nav-link" to="/empleados">Empleados</RouterLink>
+            <RouterLink class="nav-link text-light" to="/empleados">Empleados</RouterLink>
           </li>
 
           <li class="nav-item" v-if="authStore.empleado?.nivel_acceso === 'administrador'">
-            <RouterLink class="nav-link" to="/estadisticas">Estadísticas</RouterLink>
+            <RouterLink class="nav-link text-light" to="/estadisticas">Estadísticas</RouterLink>
           </li>
 
           <li class="nav-item" v-if="authStore.empleado?.nivel_acceso === 'administrador'">
-            <RouterLink class="nav-link" to="/logs">Registro</RouterLink>
+            <RouterLink class="nav-link text-light" to="/logs">Registro</RouterLink>
           </li>
         </ul>
 
@@ -84,3 +84,18 @@ const logout = async () => {
     </div>
   </nav>
 </template>
+
+<style scoped>
+/* Hover en los enlaces del navbar */
+.nav-link:hover {
+  color: rgb(63, 140, 255) !important;
+  transition: color 0.2s;
+}
+
+/* Resalta la sección activa */
+.router-link-active {
+  color: rgb(63, 140, 255) !important;
+  font-weight: 600;
+  border-bottom: 2px solid rgb(63, 140, 255);
+}
+</style>

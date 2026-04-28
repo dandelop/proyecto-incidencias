@@ -9,10 +9,10 @@
 import rateLimit from 'express-rate-limit'
 
 // Limitador general aplicado a todas las rutas de la API
-// Permite hasta 100 peticiones por IP en una ventana de 15 minutos
+// Permite hasta 300 peticiones por IP en una ventana de 15 minutos
 export const limiterGeneral = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 300,
   message: { error: 'Demasiadas peticiones, espera unos minutos y vuelve a intentarlo.' },
   standardHeaders: true,
   legacyHeaders: false

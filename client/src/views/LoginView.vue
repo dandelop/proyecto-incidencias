@@ -57,8 +57,8 @@ const login = async () => {
 </script>
 
 <template>
-  <div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
-    <div class="card shadow p-4" style="width: 380px">
+  <div class="min-vh-100 d-flex align-items-center justify-content-center">
+    <div class="card shadow p-3" style="width: 380px">
       <h4 class="text-center mb-4">Gestión de Incidencias</h4>
 
       <div v-if="error" class="alert alert-danger">{{ error }}</div>
