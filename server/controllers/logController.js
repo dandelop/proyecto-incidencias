@@ -1,8 +1,8 @@
 /*
-  Controlador para la consulta y mantenimiento del log de auditoría.
-  Todas las rutas de este controller son exclusivas para administradores.
+  Controlador para la consulta y mantenimiento del log de auditoría
+  Todas las rutas de este controller son exclusivas para administradores
   El log registra automáticamente las acciones relevantes del sistema
-  (logins, creaciones, modificaciones, eliminaciones) desde otros controllers.
+  (logins, creaciones, modificaciones, eliminaciones) desde otros controllers
  */
 
 import logDao from '../dao/logDao.js'

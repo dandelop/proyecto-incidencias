@@ -2,7 +2,7 @@
   Capa de acceso a datos para la gestión de equipos (dispositivos de clientes)
   Centraliza todas las consultas a Supabase relacionadas con la tabla 'equipos'
   Los equipos mantienen un historial de incidencias que permite rastrear
-  todas las reparaciones realizadas sobre un mismo dispositivo.
+  todas las reparaciones realizadas sobre un mismo dispositivo
  */
 
 import supabase from '../config/supabase.js'

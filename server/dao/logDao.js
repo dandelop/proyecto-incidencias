@@ -1,8 +1,8 @@
 /*
-  Capa de acceso a datos para el log de auditoría del sistema.
+  Capa de acceso a datos para el log de auditoría del sistema
   Centraliza todas las consultas a Supabase relacionadas con la tabla 'log'.
   Los registros se crean automáticamente desde registroSeguridad.js
-  y solo se consultan o eliminan desde aquí.
+  y solo se consultan o eliminan desde aquí
  */
 
 import supabase from '../config/supabase.js'
@@ -23,7 +23,7 @@ const logDao = {
     return data
   },
 
-  // Filtra el log por empleado - útil para auditar las acciones de un usuario concreto
+  // Filtra el log por empleado (útil para auditar las acciones de un usuario concreto)
   async listarPorEmpleado(usuario_id) {
     const { data, error } = await supabase
       .from('log')

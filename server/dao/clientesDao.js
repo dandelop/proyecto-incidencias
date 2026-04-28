@@ -133,7 +133,7 @@ const clientesDao = {
   },
 
   // Devuelve clientes que tienen al menos una incidencia activa
-  // Usa !inner para comportarse como un INNER JOIN - excluye clientes sin incidencias activas
+  // Usa !inner para comportarse como un INNER JOIN (excluye clientes sin incidencias activas)
   async listarConIncidenciasActivas() {
     const { data, error } = await supabase
       .from('clientes')

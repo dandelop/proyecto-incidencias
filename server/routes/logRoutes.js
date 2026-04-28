@@ -15,7 +15,7 @@ const router = Router()
 router.get('/', nivelAcceso('administrador'), logController.listarTodos)
 // Filtra el log por tipo de acción (LOGIN_EXITOSO, CLIENTE_CREADO, etc.)
 router.get('/accion/:accion', nivelAcceso('administrador'), logController.listarPorAccion)
-// Filtra el log por empleado - útil para auditar las acciones de un usuario concreto
+// Filtra el log por empleado (útil para auditar las acciones de un usuario concreto)
 router.get('/empleado/:id', nivelAcceso('administrador'), logController.listarPorEmpleado)
 // Elimina los registros con más de 90 días de antigüedad para mantener la tabla manejable
 router.delete('/antiguos', nivelAcceso('administrador'), logController.eliminarAntiguos)

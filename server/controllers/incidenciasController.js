@@ -1,8 +1,8 @@
 /*
-  Controlador para la gestión de incidencias (reparaciones).
+  Controlador para la gestión de incidencias (reparaciones)
   Incluye lógica de negocio como validación de título obligatorio,
   comprobación de equipo sin incidencias activas, generación de código único,
-  actualización automática de fechas según el estado y registro de auditoría.
+  actualización automática de fechas según el estado y registro de auditoría
  */
 
 import incidenciasDao from '../dao/incidenciasDao.js'
@@ -89,7 +89,7 @@ const incidenciasController = {
     }
   },
 
-  // Modifica una incidencia existente.
+  // Modifica una incidencia existente
   // Aplica fechas automáticas según el cambio de estado:
   // - Al pasar a 'en_proceso' se registra la fecha de inicio
   // - Al pasar a 'entregado' o 'cancelado' se registra la fecha de cierre

@@ -100,8 +100,8 @@ onMounted(cargar)
 
 <template>
   <div>
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2>Logs de auditoría</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3 ms-3 me-3">
+      <h2>Registro de Auditoría</h2>
       <span class="text-muted small">{{ logsFiltrados.length }} registros encontrados</span>
     </div>
 

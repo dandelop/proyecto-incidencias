@@ -174,7 +174,7 @@ onMounted(cargarYRenderizar)
 
 <template>
   <div>
-    <h2 class="mb-4">Estadísticas</h2>
+    <h2 class="mb-4 ms-3 me-3">Estadísticas</h2>
 
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
 

@@ -34,7 +34,7 @@ router.patch('/:id/alta', nivelAcceso('administrador'), clientesController.darDe
 router.patch('/:id/baja', nivelAcceso('administrador'), clientesController.darDeBaja)
 router.delete('/:id', nivelAcceso('administrador'), clientesController.eliminar)
 
-// Rutas con parámetro :id - siempre al final para evitar conflictos
+// Rutas con parámetro :id (siempre al final para evitar conflictos)
 router.get('/:id', nivelAcceso('administrador'), clientesController.buscarPorId)
 
 export default router

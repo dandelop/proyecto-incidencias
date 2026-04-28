@@ -42,7 +42,7 @@ app.use(limiterGeneral)
 
 app.use('/api', router)
 
-// El manejador de errores siempre va al final - captura cualquier error
+// El manejador de errores siempre va al final (captura cualquier error)
 // lanzado en controllers o DAOs mediante next(err)
 app.use(manejadorErrores)
 

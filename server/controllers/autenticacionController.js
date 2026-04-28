@@ -23,7 +23,7 @@ const autenticacionController = {
       // Buscamos el empleado por correo
       const empleado = await autenticacionDao.buscarPorCorreo(correo)
 
-      // Verificamos credenciales - el mensaje de error es intencionalmente genérico
+      // Verificamos credenciales: el mensaje de error es intencionalmente genérico
       // para no revelar si el correo existe o no (prevención de enumeración de usuarios)
       if (!empleado || !(await bcrypt.compare(password, empleado.password_hash))) {
         await registrarLog(null, 'LOGIN_FALLIDO', `Intento fallido con correo: ${correo}`, req)
@@ -91,8 +91,8 @@ const autenticacionController = {
     res.json({ mensaje: 'Sesión cerrada correctamente' })
   },
 
-  // Devuelve los datos del empleado autenticado extraídos del JWT.
-  // Usado por el frontend al arrancar para restaurar la sesión activa.
+  // Devuelve los datos del empleado autenticado extraídos del JWT
+  // Usado por el frontend al arrancar para restaurar la sesión activa
   async me(req, res) {
     res.json({ empleado: req.empleado })
   }

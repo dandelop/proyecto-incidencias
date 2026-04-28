@@ -3,8 +3,8 @@
   Agrupa y registra todos los routers bajo el prefijo /api (definido en server/index.js)
  
   Estructura de acceso:
-  - /autenticacion → rutas públicas (login, logout, me) - no requieren token
-  - Resto de rutas → protegidas globalmente con verificarToken
+  - /autenticacion -> rutas públicas (login, logout, me). No requieren token
+  - Resto de rutas -> protegidas globalmente con verificarToken
   El control de acceso por rol se aplica individualmente en cada router
  */
 
@@ -22,7 +22,7 @@ const router = Router()
 // Rutas públicas - accesibles sin token (login, logout, me)
 router.use('/autenticacion', autenticacionRoutes)
 
-// Middleware global de autenticación - todas las rutas definidas a partir de aquí requieren JWT válido
+// Middleware global de autenticación (todas las rutas definidas a partir de aquí requieren JWT válido)
 router.use(verificarToken)
 
 router.use('/empleados', empleadosRoutes)

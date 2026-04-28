@@ -122,7 +122,7 @@ onMounted(async () => {
 
 <template>
   <div>
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 ms-3 me-3">
       <h2>Equipos</h2>
       <span class="text-muted small">{{ equiposFiltrados.length }} equipos encontrados</span>
     </div>

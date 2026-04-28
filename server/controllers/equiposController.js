@@ -1,5 +1,5 @@
 /*
-  Controlador para la gestión de equipos (dispositivos de clientes).
+  Controlador para la gestión de equipos (dispositivos de clientes)
   Los equipos se crean siempre asociados a una incidencia y mantienen
   un historial de todas las reparaciones realizadas sobre ellos.
  */
@@ -108,9 +108,9 @@ const equiposController = {
     }
   },
 
-  // Busca un equipo por su número de serie.
+  // Busca un equipo por su número de serie
   // Se usa al crear una incidencia para detectar si el equipo ya está registrado
-  // y evitar duplicados en la base de datos.
+  // y evitar duplicados en la base de datos
   async buscarPorSerial(req, res) {
     try {
       const { serial } = req.params

@@ -19,7 +19,7 @@ const router = Router()
 // El rate limiter estricto solo se aplica al login para frenar ataques de fuerza bruta
 router.post('/login', limiterLogin, autenticacionController.login)
 
-// Logout y me requieren token válido - no tiene sentido cerrar sesión sin estar logueado
+// Logout y me requieren token válido (no tiene sentido cerrar sesión sin estar logueado)
 router.post('/logout', verificarToken, autenticacionController.logout)
 router.get('/me', verificarToken, autenticacionController.me)
 

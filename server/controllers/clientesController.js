@@ -1,8 +1,8 @@
 /*
-  Controlador para la gestión de clientes.
-  Actúa como intermediario entre las rutas HTTP y la capa de acceso a datos (DAO).
+  Controlador para la gestión de clientes
+  Actúa como intermediario entre las rutas HTTP y la capa de acceso a datos (DAO)
   Incluye lógica de negocio como comprobación de incidencias activas antes de bajas/eliminaciones
-  y registro de auditoría en todas las operaciones de escritura.
+  y registro de auditoría en todas las operaciones de escritura
  */
 
 import clientesDao from '../dao/clientesDao.js'
@@ -58,9 +58,9 @@ const clientesController = {
     }
   },
 
-  // Baja lógica del cliente.
-  // Si tiene incidencias activas, las cancela automáticamente antes de proceder.
-  // Devuelve el número de incidencias canceladas para informar al frontend.
+  // Baja lógica del cliente
+  // Si tiene incidencias activas, las cancela automáticamente antes de proceder
+  // Devuelve el número de incidencias canceladas para informar al frontend
   async darDeBaja(req, res) {
     try {
       const { id } = req.params
@@ -90,8 +90,8 @@ const clientesController = {
     }
   },
 
-  // Eliminación física del cliente.
-  // No se permite si tiene incidencias activas - devuelve 409 en ese caso
+  // Eliminación física del cliente
+  // No se permite si tiene incidencias activas. Devuelve error 409 en ese caso
   async eliminar(req, res) {
     try {
       const { id } = req.params

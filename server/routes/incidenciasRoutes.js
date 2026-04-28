@@ -21,7 +21,7 @@ router.get('/contar', nivelAcceso('administrador', 'técnico'), incidenciasContr
 router.get('/detalles', nivelAcceso('administrador', 'técnico'), incidenciasController.listarConDetalles)
 router.get('/activas', nivelAcceso('administrador', 'técnico'), incidenciasController.listarActivas)
 router.get('/estado/:estado', nivelAcceso('administrador', 'técnico'), incidenciasController.listarPorEstado)
-// Filtra por empleado asignado - usado por técnicos para ver sus propias incidencias
+// Filtra por empleado asignado (usado por técnicos para ver sus propias incidencias)
 router.get('/asignado/:id', nivelAcceso('administrador', 'técnico'), incidenciasController.listarPorAsignado)
 router.get('/cliente/:id', nivelAcceso('administrador', 'técnico'), incidenciasController.listarPorCliente)
 router.get('/equipo/tipo/:tipo', nivelAcceso('administrador', 'técnico'), incidenciasController.listarPorTipoEquipo)
@@ -31,7 +31,7 @@ router.put('/:id', nivelAcceso('administrador', 'técnico'), incidenciasControll
 // Rutas exclusivas para administrador
 router.delete('/:id', nivelAcceso('administrador'), incidenciasController.eliminar)
 
-// Rutas con parámetro :id - siempre al final para evitar conflictos
+// Rutas con parámetro :id (siempre al final para evitar conflictos)
 router.get('/:id', nivelAcceso('administrador', 'técnico'), incidenciasController.buscarPorId)
 
 export default router

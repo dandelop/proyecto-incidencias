@@ -167,7 +167,7 @@ onMounted(async () => {
 
       <!-- CABECERA -->
       <div class="d-flex align-items-center gap-3 mb-4">
-        <h2 class="mb-0">Mi perfil</h2>
+        <h2 class="mb-0 ms-3">Mi perfil</h2>
         <span class="badge bg-primary text-capitalize">{{ empleado.nivel_acceso }}</span>
         <span v-if="empleado.estado === 'activo'" class="badge bg-success">Activo</span>
         <span v-else-if="empleado.estado === 'vacaciones'" class="badge bg-warning">Vacaciones</span>

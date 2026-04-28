@@ -1,7 +1,7 @@
 /*
-  Controlador para la gestión de empleados.
+  Controlador para la gestión de empleados
   Incluye lógica de control de acceso por rol (administrador/técnico),
-  hasheo de contraseñas, notificaciones por email y registro de auditoría.
+  hasheo de contraseñas, notificaciones por email y registro de auditoría
  */
 
 import empleadosDao from '../dao/empleadosDao.js'
@@ -34,8 +34,8 @@ const empleadosController = {
     }
   },
 
-  // Registra un nuevo empleado.
-  // La contraseña se hashea con bcrypt antes de almacenarse - nunca se guarda en texto plano.
+  // Registra un nuevo empleado
+  // La contraseña se hashea con bcrypt antes de almacenarse
   async registrar(req, res) {
     try {
       const empleado = req.body
@@ -149,7 +149,7 @@ const empleadosController = {
   },
 
   // Busca un empleado por su ID.
-  // Control de acceso: un técnico solo puede ver su propio perfil.
+  // Control de acceso: un técnico solo puede ver su propio perfil
   async buscarPorId(req, res) {
     try {
       const { id } = req.params
@@ -169,10 +169,10 @@ const empleadosController = {
     }
   },
 
-  // Cambia la contraseña de un empleado.
-  // Control de acceso: un técnico solo puede cambiar la suya y debe verificar la actual.
-  // Un administrador puede cambiar la de cualquier empleado sin verificación.
-  // Tras el cambio se envía un email de aviso y se registra en el log de auditoría.
+  // Cambia la contraseña de un empleado
+  // Control de acceso: un técnico solo puede cambiar la suya y debe verificar la actual
+  // Un administrador puede cambiar la de cualquier empleado sin verificación
+  // Tras el cambio se envía un email de aviso y se registra en el log de auditoría
   async cambiarPassword(req, res) {
     try {
       const { id } = req.params
@@ -215,10 +215,10 @@ const empleadosController = {
     }
   },
 
-  // Actualiza los datos de un empleado.
+  // Actualiza los datos de un empleado
   // Si el nuevo estado implica no disponibilidad (baja, desvinculado, vacaciones),
-  // desasigna automáticamente sus incidencias activas para que puedan ser reasignadas.
-  // Devuelve el número de incidencias desasignadas para informar al frontend.
+  // desasigna automáticamente sus incidencias activas para que puedan ser reasignadas
+  // Devuelve el número de incidencias desasignadas para informar al frontend
   async actualizar(req, res) {
     try {
       const { id } = req.params

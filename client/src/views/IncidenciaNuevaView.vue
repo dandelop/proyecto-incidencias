@@ -216,7 +216,7 @@ onMounted(async () => {
   <div class="container" style="max-width: 800px">
     <div class="d-flex align-items-center gap-3 mb-4">
       <RouterLink to="/incidencias" class="btn btn-outline-secondary btn-sm">← Volver</RouterLink>
-      <h2 class="mb-0">Nueva incidencia</h2>
+      <h2 class="mb-0 ms-2">Nueva incidencia</h2>
     </div>
 
     <!-- 1: CLIENTE -->
