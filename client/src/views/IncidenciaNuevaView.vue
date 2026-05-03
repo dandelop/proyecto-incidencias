@@ -146,7 +146,7 @@ const validar = () => {
     if (!campoObligatorio(equipo.value.nombre)) errores.value.equipoNombre = 'El nombre del equipo es obligatorio'
     if (!campoObligatorio(equipo.value.tipo)) errores.value.equipoTipo = 'El tipo del equipo es obligatorio'
   }
-  S
+
   return Object.keys(errores.value).length === 0
 }
 
