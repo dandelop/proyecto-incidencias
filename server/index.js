@@ -22,7 +22,14 @@ import cookieParser from 'cookie-parser'
 import { limiterGeneral } from './middlewares/limiteAcceso.js'
 import manejadorErrores from './middlewares/manejadorErrores.js'
 
+// Swagger UI para documentación interactiva de la API
+import swaggerUi from 'swagger-ui-express'
+import { readFileSync } from 'fs'
+import { parse } from 'yaml'
+
 const app = express()
+const swaggerDocument = parse(readFileSync('./swagger.yaml', 'utf8'))
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 // Necesario para que express-rate-limit identifique correctamente las IPs
 // cuando el servidor está detrás de un proxy inverso (Render en producción)

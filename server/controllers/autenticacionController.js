@@ -46,7 +46,7 @@ const autenticacionController = {
       }
 
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRES_IN || '8h'
+        expiresIn: '8h'
       })
 
       // Almacenamos el token en una cookie httpOnly para que JS no pueda acceder a él,

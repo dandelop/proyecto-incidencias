@@ -1,0 +1,892 @@
+openapi: 3.0.0
+info:
+  title: Gestor de Incidencias API
+  description: API REST para la gestión de incidencias de una tienda de reparación
+
+server:
+  - url: https://proyecto-incidencias.onrender.com/api-docs
+    description: Producción
+  - url: http://localhost:3000/api-docs
+    description: Desarrollo local
+
+components:
+
+paths:
+
+  # AUTENTICACIÓN
+
+  /autenticacion/login:
+    post:
+      tags: [Autenticación]
+      summary: Inicia sesión
+      description: Valida las credenciales y devuelve una cookie httpOnly con el JWT. Limitado a 10 intentos por IP cada 15 minutos.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [correo, password]
+              properties:
+                correo:
+                  type: string
+                  example: admin@taller.com
+                password:
+                  type: string
+                  example: password123
+      responses:
+        '200':
+          description: Login correcto. Devuelve los datos básicos del empleado y establece la cookie de sesión.
+        '400':
+          description: Faltan campos obligatorios
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Credenciales incorrectas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Usuario inactivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Demasiados intentos fallidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /autenticacion/logout:
+    post:
+      tags: [Autenticación]
+      summary: Cierra sesión
+      description: Elimina la cookie de sesión y registra el logout en el log de auditoría.
+      responses:
+        '200':
+          description: Sesión cerrada correctamente
+        '401':
+          description: No hay sesión activa
+
+  /autenticacion/me:
+    get:
+      tags: [Autenticación]
+      summary: Obtiene el empleado autenticado
+      description: Devuelve los datos del empleado extraídos del JWT. Usado por el frontend al arrancar para verificar si hay sesión activa.
+      responses:
+        '200':
+          description: Datos del empleado autenticado
+        '401':
+          description: No hay sesión activa
+
+  # INCIDENCIAS
+
+  /incidencias:
+    get:
+      tags: [Incidencias]
+      summary: Lista todas las incidencias
+      responses:
+        '200':
+          description: Lista de incidencias
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Incidencia'
+        '401':
+          description: No hay sesión activa
+    post:
+      tags: [Incidencias]
+      summary: Crea una nueva incidencia
+      description: Genera automáticamente el código con formato INC-{año}-{id}. Comprueba que el equipo no tenga ya una incidencia activa.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Incidencia'
+      responses:
+        '201':
+          description: Incidencia creada correctamente
+        '400':
+          description: Título obligatorio
+        '409':
+          description: El equipo ya tiene una incidencia activa
+
+  /incidencias/detalles:
+    get:
+      tags: [Incidencias]
+      summary: Lista todas las incidencias con datos cruzados
+      description: Devuelve las incidencias con datos del cliente, equipo, técnico asignado y empleado creador.
+      responses:
+        '200':
+          description: Lista de incidencias con detalles
+
+  /incidencias/contar:
+    get:
+      tags: [Incidencias]
+      summary: Cuenta el total de incidencias
+      responses:
+        '200':
+          description: Total de incidencias
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+
+  /incidencias/activas:
+    get:
+      tags: [Incidencias]
+      summary: Lista las incidencias activas
+      description: Devuelve las incidencias que no están en estado entregado ni cancelado.
+      responses:
+        '200':
+          description: Lista de incidencias activas
+
+  /incidencias/estado/{estado}:
+    get:
+      tags: [Incidencias]
+      summary: Lista incidencias por estado
+      parameters:
+        - in: path
+          name: estado
+          required: true
+          schema:
+            type: string
+            enum: [creada, en_proceso, esperando_respuesta_cliente, esperando_piezas, reparado, entregado, cancelado]
+      responses:
+        '200':
+          description: Lista de incidencias filtradas por estado
+
+  /incidencias/cliente/{id}:
+    get:
+      tags: [Incidencias]
+      summary: Lista incidencias de un cliente
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de incidencias del cliente
+
+  /incidencias/asignado/{id}:
+    get:
+      tags: [Incidencias]
+      summary: Lista incidencias asignadas a un técnico
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de incidencias asignadas al técnico
+
+  /incidencias/equipo/tipo/{tipo}:
+    get:
+      tags: [Incidencias]
+      summary: Lista incidencias por tipo de equipo
+      parameters:
+        - in: path
+          name: tipo
+          required: true
+          schema:
+            type: string
+            enum: [smartphone, portátil, sobremesa, tablet, consola, periférico, otro]
+      responses:
+        '200':
+          description: Lista de incidencias filtradas por tipo de equipo
+
+  /incidencias/{id}:
+    get:
+      tags: [Incidencias]
+      summary: Obtiene una incidencia por ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Datos de la incidencia
+        '404':
+          description: Incidencia no encontrada
+    put:
+      tags: [Incidencias]
+      summary: Modifica una incidencia
+      description: Actualiza estado, técnico asignado y prioridad. Gestiona automáticamente las fechas de inicio y cierre según el estado.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                estado:
+                  type: string
+                  enum: [creada, en_proceso, esperando_respuesta_cliente, esperando_piezas, reparado, entregado, cancelado]
+                id_tecnico_asignado:
+                  type: integer
+                prioridad:
+                  type: string
+                  enum: [baja, media, alta, crítica]
+      responses:
+        '200':
+          description: Incidencia modificada correctamente
+        '404':
+          description: Incidencia no encontrada
+    delete:
+      tags: [Incidencias]
+      summary: Elimina una incidencia
+      description: Solo accesible para administradores.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Incidencia eliminada correctamente
+        '401':
+          description: No hay sesión activa
+        '403':
+          description: No tienes permisos suficientes
+
+  # CLIENTES
+
+  /clientes:
+    get:
+      tags: [Clientes]
+      summary: Lista todos los clientes
+      description: Devuelve todos los clientes ordenados alfabéticamente.
+      responses:
+        '200':
+          description: Lista de clientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cliente'
+    post:
+      tags: [Clientes]
+      summary: Crea un nuevo cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cliente'
+      responses:
+        '201':
+          description: Cliente creado correctamente
+
+  /clientes/activos:
+    get:
+      tags: [Clientes]
+      summary: Lista los clientes activos
+      responses:
+        '200':
+          description: Lista de clientes activos
+
+  /clientes/bajas:
+    get:
+      tags: [Clientes]
+      summary: Lista los clientes dados de baja
+      description: Solo accesible para administradores.
+      responses:
+        '200':
+          description: Lista de clientes dados de baja
+
+  /clientes/contar:
+    get:
+      tags: [Clientes]
+      summary: Cuenta el total de clientes
+      description: Solo accesible para administradores.
+      responses:
+        '200':
+          description: Total de clientes
+
+  /clientes/contar/tipo:
+    get:
+      tags: [Clientes]
+      summary: Cuenta clientes por tipo
+      description: Solo accesible para administradores.
+      responses:
+        '200':
+          description: Conteo de clientes agrupado por tipo
+
+  /clientes/mas-incidencias:
+    get:
+      tags: [Clientes]
+      summary: Obtiene el cliente con más incidencias
+      description: Solo accesible para administradores.
+      responses:
+        '200':
+          description: Cliente con mayor número de incidencias
+
+  /clientes/sin-incidencias:
+    get:
+      tags: [Clientes]
+      summary: Lista clientes sin incidencias
+      description: Solo accesible para administradores.
+      responses:
+        '200':
+          description: Lista de clientes sin incidencias registradas
+
+  /clientes/con-incidencias:
+    get:
+      tags: [Clientes]
+      summary: Lista clientes con incidencias
+      responses:
+        '200':
+          description: Lista de clientes con incidencias
+
+  /clientes/con-incidencias-activas:
+    get:
+      tags: [Clientes]
+      summary: Lista clientes con incidencias activas
+      responses:
+        '200':
+          description: Lista de clientes con incidencias activas
+
+  /clientes/tipo/{tipo}:
+    get:
+      tags: [Clientes]
+      summary: Lista clientes por tipo
+      parameters:
+        - in: path
+          name: tipo
+          required: true
+          schema:
+            type: string
+            enum: [particular, autónomo, empresa]
+      responses:
+        '200':
+          description: Lista de clientes filtrados por tipo
+
+  /clientes/{id}:
+    get:
+      tags: [Clientes]
+      summary: Obtiene un cliente por ID
+      description: Solo accesible para administradores.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Datos del cliente
+        '404':
+          description: Cliente no encontrado
+    put:
+      tags: [Clientes]
+      summary: Actualiza un cliente
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cliente'
+      responses:
+        '200':
+          description: Cliente actualizado correctamente
+    delete:
+      tags: [Clientes]
+      summary: Elimina un cliente
+      description: Eliminación física. Solo permitida si el cliente no tiene incidencias activas. Solo accesible para administradores.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cliente eliminado correctamente
+        '409':
+          description: El cliente tiene incidencias activas
+
+  /clientes/{id}/baja:
+    patch:
+      tags: [Clientes]
+      summary: Da de baja a un cliente
+      description: Marca al cliente como inactivo y cancela automáticamente todas sus incidencias activas. Solo accesible para administradores.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cliente dado de baja correctamente
+
+  /clientes/{id}/alta:
+    patch:
+      tags: [Clientes]
+      summary: Reactiva un cliente dado de baja
+      description: Solo accesible para administradores.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cliente reactivado correctamente
+
+  # EMPLEADOS
+
+  /empleados:
+    get:
+      tags: [Empleados]
+      summary: Lista todos los empleados
+      description: Solo accesible para administradores.
+      responses:
+        '200':
+          description: Lista de empleados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Empleado'
+    post:
+      tags: [Empleados]
+      summary: Registra un nuevo empleado
+      description: La contraseña se hashea automáticamente en el servidor. Solo accesible para administradores.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Empleado'
+      responses:
+        '201':
+          description: Empleado registrado correctamente
+
+  /empleados/activos:
+    get:
+      tags: [Empleados]
+      summary: Lista los empleados activos
+      description: Solo accesible para administradores.
+      responses:
+        '200':
+          description: Lista de empleados activos
+
+  /empleados/tecnico-top:
+    get:
+      tags: [Empleados]
+      summary: Obtiene el técnico con más incidencias asignadas
+      description: Solo accesible para administradores.
+      responses:
+        '200':
+          description: Técnico con mayor número de incidencias asignadas
+
+  /empleados/contar/departamento:
+    get:
+      tags: [Empleados]
+      summary: Cuenta empleados por departamento
+      description: Solo accesible para administradores.
+      responses:
+        '200':
+          description: Conteo de empleados agrupado por departamento
+
+  /empleados/contar/estado:
+    get:
+      tags: [Empleados]
+      summary: Cuenta empleados por estado laboral
+      description: Solo accesible para administradores.
+      responses:
+        '200':
+          description: Conteo de empleados agrupado por estado laboral
+
+  /empleados/departamento/{departamento}:
+    get:
+      tags: [Empleados]
+      summary: Lista empleados por departamento
+      description: Solo accesible para administradores.
+      parameters:
+        - in: path
+          name: departamento
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de empleados del departamento
+
+  /empleados/nivel/{nivel}:
+    get:
+      tags: [Empleados]
+      summary: Lista empleados por nivel de acceso
+      description: Solo accesible para administradores.
+      parameters:
+        - in: path
+          name: nivel
+          required: true
+          schema:
+            type: string
+            enum: [administrador, técnico]
+      responses:
+        '200':
+          description: Lista de empleados filtrados por nivel de acceso
+
+  /empleados/correo/{correo}:
+    get:
+      tags: [Empleados]
+      summary: Obtiene un empleado por correo
+      description: Solo accesible para administradores.
+      parameters:
+        - in: path
+          name: correo
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Datos del empleado
+        '404':
+          description: Empleado no encontrado
+
+  /empleados/{id}:
+    get:
+      tags: [Empleados]
+      summary: Obtiene un empleado por ID
+      description: Los técnicos solo pueden consultar su propio perfil. Los administradores pueden consultar cualquier perfil.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Datos del empleado
+        '403':
+          description: No tienes permisos para ver este perfil
+        '404':
+          description: Empleado no encontrado
+    put:
+      tags: [Empleados]
+      summary: Actualiza un empleado
+      description: Si el nuevo estado es baja, vacaciones o desvinculado, se desasignan automáticamente sus incidencias activas.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Empleado'
+      responses:
+        '200':
+          description: Empleado actualizado correctamente
+
+  /empleados/{id}/baja:
+    patch:
+      tags: [Empleados]
+      summary: Da de baja a un empleado
+      description: Solo accesible para administradores.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Empleado dado de baja correctamente
+
+  /empleados/{id}/password:
+    patch:
+      tags: [Empleados]
+      summary: Cambia la contraseña de un empleado
+      description: Los técnicos deben proporcionar la contraseña actual. Los administradores pueden cambiarla directamente. Envía un correo de notificación al empleado.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password_actual:
+                  type: string
+                password_nueva:
+                  type: string
+      responses:
+        '200':
+          description: Contraseña actualizada correctamente
+        '401':
+          description: La contraseña actual es incorrecta
+        '403':
+          description: No tienes permisos para cambiar esta contraseña
+
+  /empleados/{id}/incidencias-creadas:
+    get:
+      tags: [Empleados]
+      summary: Lista las incidencias creadas por un empleado
+      description: Solo accesible para administradores.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de incidencias creadas por el empleado
+
+  /empleados/{id}/incidencias-asignadas:
+    get:
+      tags: [Empleados]
+      summary: Lista las incidencias asignadas a un empleado
+      description: Solo accesible para administradores.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de incidencias asignadas al empleado
+
+  # EQUIPOS
+
+  /equipos:
+    get:
+      tags: [Equipos]
+      summary: Lista todos los equipos
+      responses:
+        '200':
+          description: Lista de equipos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Equipo'
+    post:
+      tags: [Equipos]
+      summary: Registra un nuevo equipo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Equipo'
+      responses:
+        '201':
+          description: Equipo registrado correctamente
+
+  /equipos/activos:
+    get:
+      tags: [Equipos]
+      summary: Lista equipos con incidencias activas
+      responses:
+        '200':
+          description: Lista de equipos con incidencias activas
+
+  /equipos/contar/tipo:
+    get:
+      tags: [Equipos]
+      summary: Cuenta equipos por tipo
+      description: Solo accesible para administradores.
+      responses:
+        '200':
+          description: Conteo de equipos agrupado por tipo
+
+  /equipos/tipo/{tipo}:
+    get:
+      tags: [Equipos]
+      summary: Lista equipos por tipo
+      parameters:
+        - in: path
+          name: tipo
+          required: true
+          schema:
+            type: string
+            enum: [smartphone, portátil, sobremesa, tablet, consola, periférico, otro]
+      responses:
+        '200':
+          description: Lista de equipos filtrados por tipo
+
+  /equipos/serial/{serial}:
+    get:
+      tags: [Equipos]
+      summary: Busca un equipo por número de serie
+      description: Usado al crear una incidencia para detectar si el equipo ya está registrado.
+      parameters:
+        - in: path
+          name: serial
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Datos del equipo
+        '404':
+          description: Equipo no encontrado
+
+  /equipos/{id}:
+    get:
+      tags: [Equipos]
+      summary: Obtiene un equipo por ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Datos del equipo
+        '404':
+          description: Equipo no encontrado
+    put:
+      tags: [Equipos]
+      summary: Actualiza un equipo
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Equipo'
+      responses:
+        '200':
+          description: Equipo actualizado correctamente
+    delete:
+      tags: [Equipos]
+      summary: Elimina un equipo
+      description: Eliminación física. Solo accesible para administradores.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Equipo eliminado correctamente
+
+  /equipos/{id}/historial:
+    get:
+      tags: [Equipos]
+      summary: Obtiene el historial de incidencias de un equipo
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Equipo con su historial de incidencias ordenado por fecha
+        '404':
+          description: Equipo no encontrado
+
+  # LOGS
+
+  /log:
+    get:
+      tags: [Logs]
+      summary: Lista todos los logs
+      description: Devuelve todos los registros de auditoría ordenados por fecha descendente. Solo accesible para administradores.
+      responses:
+        '200':
+          description: Lista de registros de auditoría
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Log'
+
+  /log/accion/{accion}:
+    get:
+      tags: [Logs]
+      summary: Lista logs por tipo de acción
+      description: Solo accesible para administradores.
+      parameters:
+        - in: path
+          name: accion
+          required: true
+          schema:
+            type: string
+            example: LOGIN_EXITOSO
+      responses:
+        '200':
+          description: Lista de logs filtrados por acción
+
+  /log/empleado/{id}:
+    get:
+      tags: [Logs]
+      summary: Lista logs de un empleado concreto
+      description: Solo accesible para administradores.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de logs del empleado
+
+  /log/antiguos:
+    delete:
+      tags: [Logs]
+      summary: Elimina logs con más de 90 días
+      description: Solo accesible para administradores.
+      responses:
+        '200':
+          description: Logs antiguos eliminados correctamente

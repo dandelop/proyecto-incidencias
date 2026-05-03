@@ -119,8 +119,8 @@ const router = createRouter({
 // Navigation guard - se ejecuta antes de cada cambio de ruta
 router.beforeEach(async (to, from) => {
 
-  // Limpia backdrops huérfanos de Bootstrap que puedan quedar al navegar
-  // desde una vista con modal abierto
+  // Limpia los fondos de Bootstrap que puedan quedar al navegar
+  // desde una vista con un modal abierto
   document.querySelectorAll('.modal-backdrop').forEach(el => el.remove())
   document.body.classList.remove('modal-open')
   document.body.style.overflow = ''

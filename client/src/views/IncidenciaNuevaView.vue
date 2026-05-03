@@ -4,8 +4,8 @@
   2. Incidencia: datos de la incidencia a registrar
   3. Equipo: datos del dispositivo a reparar, con detección por número de serie
 
-  El formulario gestiona la creación encadenada de hasta tres entidades:
-  cliente (opcional) -> equipo (o reutilización de uno ya existente) -> incidencia
+  El formulario gestiona la creación encadenada de tres entidades:
+  cliente (o reutilización de uno ya existente) -> equipo (o reutilización de uno ya existente) -> incidencia (siempre nueva)
 -->
 
 <script setup>
@@ -125,7 +125,6 @@ const buscarPorSerial = async () => {
 }
 
 // Validación del formulario
-
 const validar = () => {
   errores.value = {}
 
@@ -178,10 +177,9 @@ const submit = async () => {
     }
 
     // 2. Reutilizar equipo existente o crear uno nuevo
-    // Se usa spread para evitar pasar el Proxy reactivo de Vue directamente a axios
     let idEquipo = equipoExistente.value?.id
     if (!idEquipo) {
-      const equipoCreado = await equiposService.insertar({ ...equipo.value })
+      const equipoCreado = await equiposService.insertar(equipo.value)
       idEquipo = equipoCreado.id
     }
 
