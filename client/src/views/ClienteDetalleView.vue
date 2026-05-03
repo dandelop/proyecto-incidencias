@@ -88,6 +88,7 @@ const darDeBaja = async () => {
       mensajeInfo.value = `Se han cancelado ${res.incidenciasCanceladas} incidencias activas.`
       const modal = new bootstrap.Modal(document.getElementById('modalInfo'))
       modal.show()
+      incidencias.value = await incidenciasService.porCliente(cliente.value.id)
     }
   } catch (err) {
     error.value = 'Error al dar de baja'
