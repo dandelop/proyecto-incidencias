@@ -79,12 +79,14 @@ const cancelarEdicion = () => {
 const guardar = async () => {
   try {
     cargando.value = true
+    const estadoAnterior = empleado.value.estado
     const res = await empleadosService.actualizar(empleado.value.id, empleadoEditado.value)
     empleado.value = res.empleado
     modoEdicion.value = false
     await cargarIncidencias()
+
     // Si el cambio de estado laboral desasignó incidencias, se informa
-    if (res.incidenciasDesasignadas > 0) {
+    if (res.incidenciasDesasignadas > 0 && empleadoEditado.value.estado !== estadoAnterior) {
       mensajeInfo.value = `Se han desasignado ${res.incidenciasDesasignadas} incidencias activas.`
       const modal = new bootstrap.Modal(document.getElementById('modalInfo'))
       modal.show()
@@ -251,7 +253,7 @@ onMounted(async () => {
             <div class="col-md-4" v-if="esAdmin">
               <label class="form-label text-muted small">Nivel de acceso</label>
               <p v-if="!modoEdicion" class="mb-0 form-control-plaintext py-1 text-capitalize">{{ empleado.nivel_acceso
-                }}</p>
+              }}</p>
               <select v-else v-model="empleadoEditado.nivel_acceso" class="form-select">
                 <option value="técnico">Técnico</option>
                 <option value="administrador">Administrador</option>

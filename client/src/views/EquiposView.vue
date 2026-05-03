@@ -29,7 +29,7 @@ const filtroTipo = ref('')
 
 // Paginación
 const paginaActual = ref(1)
-const porPagina = 6
+const porPagina = 12
 
 // Mapa de colores para los badges de estado de incidencia
 const estadosBadge = {

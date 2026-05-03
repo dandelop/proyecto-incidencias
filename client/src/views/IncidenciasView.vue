@@ -48,7 +48,7 @@ const soloMias = ref(false)       // filtra por incidencias asignadas al usuario
 
 // Paginación
 const paginaActual = ref(1)
-const porPagina = 20
+const porPagina = 12
 
 // Mapas de colores para badges de Bootstrap
 const estadosBadge = {
