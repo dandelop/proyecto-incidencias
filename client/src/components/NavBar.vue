@@ -29,10 +29,10 @@ const logout = async () => {
     <div class="container-fluid">
 
       <!-- Logo y nombre de la aplicación -->
-      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+      <div class="navbar-brand d-flex align-items-center gap-2" href="#">
         <img src="../assets/logo.png" alt="Logo" width="32" height="32" onerror="this.style.display='none'">
         <span class="ms-1">Gestor de Incidencias</span>
-      </a>
+      </div>
 
       <!-- Botón hamburguesa - visible solo en pantallas pequeñas -->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
