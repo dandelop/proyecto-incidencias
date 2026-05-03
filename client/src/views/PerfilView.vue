@@ -81,7 +81,8 @@ const cancelarEdicion = () => {
 const guardar = async () => {
   try {
     cargando.value = true
-    empleado.value = await empleadosService.actualizar(empleado.value.id, empleadoEditado.value)
+    const res = await empleadosService.actualizar(empleado.value.id, empleadoEditado.value)
+    empleado.value = res.empleado
     modoEdicion.value = false
   } catch (err) {
     error.value = 'Error al actualizar el perfil'
