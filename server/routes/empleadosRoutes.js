@@ -18,7 +18,6 @@ const router = Router()
 
 // Rutas exclusivas para administrador
 router.get('/', nivelAcceso('administrador'), empleadosController.obtenerTodos)
-router.get('/activos', nivelAcceso('administrador'), empleadosController.listarActivos)
 router.get('/tecnico-top', nivelAcceso('administrador'), empleadosController.tecnicoConMasIncidencias)
 router.get('/contar/departamento', nivelAcceso('administrador'), empleadosController.contarPorDepartamento)
 router.get('/contar/estado', nivelAcceso('administrador'), empleadosController.contarPorEstado)
@@ -31,6 +30,7 @@ router.post('/', nivelAcceso('administrador'), empleadosController.registrar)
 router.patch('/:id/baja', nivelAcceso('administrador'), empleadosController.darDeBaja)
 
 // Rutas accesibles para administrador y técnico
+router.get('/activos', nivelAcceso('administrador', 'técnico'), empleadosController.listarActivos)
 // Un técnico puede ver su propio perfil pero no el de otros (validado en el controller)
 router.get('/:id', nivelAcceso('administrador', 'técnico'), empleadosController.buscarPorId)
 // Un técnico solo puede cambiar su propia contraseña y debe verificar la actual (validado en el controller)
